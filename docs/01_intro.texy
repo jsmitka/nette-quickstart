@@ -1,0 +1,18 @@
+Vytvořte si první aplikaci!
+###########################
+
+.[perex]
+Tento praktický návod Vás provede tvorbou Vaší první aplikace v Nette Framework. Během **pár minut** vytvoříme
+**funkční a bezpečnou** aplikaci a ukážeme si některé výhody Nette, například **šablonovací systém**, **plnou podporu AJAXu**
+nebo **formuláře**.
+
+--------
+
+Námi vytvářená aplikace bude jednoduchý úkolníček. Nejprve si vytvoříme jednoduchý seznam úkolů a postupně budeme
+aplikaci rozšiřovat - možnost úkoly organizovat do několika seznamů, přihlašování uživatelů, plánování úkolů a jejich
+přiřazování jednotlivým uživatelům. Aplikaci pak také přidáme podporu AJAXu.
+
+.[note]
+Tutoriál je psán pro PHP 5.3.
+
+**Začínáme!**
