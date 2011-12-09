@@ -1,0 +1,9 @@
+Vytvoření presenteru
+####################
+
+.[perex]
+V této kapitole si představíme presentery a vše, co s nimi souvisí. Ukážeme si, jak napsat vlastní presenter,
+jak psát v šablonovacím jazyce Latte a jak využívat model, který jsme již dříve napsali.
+
+--------
+

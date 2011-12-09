@@ -4,10 +4,10 @@ use Nette\Security as NS;
 
 
 /**
- * Users authenticator.
+ * Třída, která se stará o autentifikaci uživatelů.
  *
- * @author     John Doe
- * @package    MyApplication
+ * @author     David Grudl
+ * @package    Quickstart
  */
 class Authenticator extends Nette\Object implements NS\IAuthenticator
 {
@@ -24,10 +24,10 @@ class Authenticator extends Nette\Object implements NS\IAuthenticator
 
 
 	/**
-	 * Performs an authentication
-	 * @param  array
-	 * @return Nette\Security\Identity
-	 * @throws Nette\Security\AuthenticationException
+	 * Provede ověření zadaných přístupových údajů.
+	 * @param  array Pole obsahující klíče IAuthenticator::USERNAME a IAuthenticator::PASSWORD.
+	 * @return Nette\Security\Identity Identita uživatele.
+	 * @throws Nette\Security\AuthenticationException V případě, že zadané údaje nejsou platné.
 	 */
 	public function authenticate(array $credentials)
 	{
@@ -49,9 +49,9 @@ class Authenticator extends Nette\Object implements NS\IAuthenticator
 
 
 	/**
-	 * Computes salted password hash.
-	 * @param  string
-	 * @return string
+	 * Vypočítá osolený hash hesla.
+	 * @param  string Heslo v plaintextu.
+	 * @return string Vypočítaný hash.
 	 */
 	public function calculateHash($password)
 	{

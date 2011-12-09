@@ -13,7 +13,7 @@ common:
 	services:
 		database:
 			class: Nette\Database\Connection
-			arguments: ['mysql:host=localhost;dbname=test', 'user', 'password']
+			arguments: ['mysql:host=localhost;dbname=quickstart', 'quickstart', 'qs']
 
 		model:
 			class: Model
