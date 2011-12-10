@@ -29,6 +29,11 @@ Předpokládáme, že z tabulky budeme nejčastěji vybírat úkoly z jediného 
 zda jsou splněné či nesplněné a řadit podle data jejich přidání. Vytoříme tedy navíc jeden index nad sloupci
 `tasklist_id`, `done`, `created`.
 
+.[note]
+Povšimněte si názvu sloupečků, které se odkazují na jiné tabulky. Jsou vždy ve formátu `<tabulka>_id`. Na základě
+pojmenování pak Nette\Database dokáže obě tabulky spojit. Jedná se o konvenci, kterou Nette\Database přejímá
+od knihovny NotORM.
+
 Již zmíněná tabulka uživatelů bude mít následující strukturu:
 - `id`: unikátní ID uživatele. Opět `INT` a primární klíč s `AUTO_INCREMENT`.
 - `username`: uživatelské jméno. `VARCHAR(20)`. Uživatelské jménu musí být navíc unikátní, takže nad sloupcem vytvoříme
