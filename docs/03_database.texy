@@ -90,8 +90,9 @@ CREATE TABLE `user` (
 );
 \---
 
-Můžete si také stáhnout skript pro MySQL: "quickstart.mysql.sql":[quickstart.mysql.sql]. To je z hlediska struktury databáze
-vše. Nyní se pustíme do psaní samotného modelu.
+Můžete si také stáhnout skript pro MySQL: "quickstart.mysql.sql":[quickstart.mysql.sql]. Také si stáhněte ukázková data
+pro MySQL: "data.mysql.sql":[data.mysql.sql]. To je z hlediska struktury databáze vše. Nyní se pustíme do psaní
+samotného modelu.
 
 
 Model
