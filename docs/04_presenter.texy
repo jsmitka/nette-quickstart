@@ -26,3 +26,7 @@ výsledky předává view, kdežto Controller má navíc na starosti i některé
 
 Model již máme díky `Nette\Database` připravený. Zbývá nám tedy presenter a view.
 
+Presenter
+*********
+
+Jak již bylo řečeno, presenter je třída, která spolupracuje s modelem a výsledná data předává view.
