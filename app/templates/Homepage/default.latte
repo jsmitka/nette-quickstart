@@ -1,10 +1,25 @@
 
 {block content}
 
-<ul>
-{foreach $list as $task}
-	<li>{$task->text}</li>
-{/foreach}
-</ul>
+<h2>Nesplněné úkoly</h2>
+
+<table>
+	<thead>
+	<tr>
+		<th>Čas vytvoření</th>
+		<th>Úkol</th>
+		<th>Přiřazeno</th>
+	</tr>
+	</thead>
+	<tbody>
+	{foreach $list as $task}
+	<tr>
+		<td>{$task->created|date:'j. n. Y'}</td>
+		<td>{$task->text}</td>
+		<td>{$task->user->name}</td>
+	</tr>
+	{/foreach}
+	</tbody>
+</table>
 
 {/block}

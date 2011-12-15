@@ -5,19 +5,20 @@
  */
 class HomepagePresenter extends BasePresenter
 {
-	/** @var Nette\Database\Table\Selection */
-	private $tasks;
+	/** @var Model */
+	private $model;
 
 	public function startup()
 	{
 		parent::startup();
-		$this->tasks = $this->getService('model')->getTasks();
+		$this->model = $this->getService('model');
 	}
 
 
 	public function renderDefault()
 	{
-		$this->template->list = $this->tasks->order('created ASC');
+		$this->template->list = $this->model->getTasks()
+			->where(array('done' => 0))->order('created ASC');
 	}
 
 }

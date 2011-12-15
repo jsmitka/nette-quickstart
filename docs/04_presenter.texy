@@ -8,7 +8,7 @@ jak psát v šablonovacím jazyce Latte a jak využívat model, který jsme již
 --------
 
 
-Na začátek se bohužel nevyheneme troše teorie. Nette využívá architekturu MVP, Model-View-Presenter. Základními kameny
+Na začátek se bohužel nevyhneme troše teorie. Nette využívá architekturu MVP, Model-View-Presenter. Základními kameny
 této architektury jsou:
 
 - **Model** - datová a funkční vrstva aplikace, která se stará o ukládání dat a aplikační logiku. Jakoukoliv událost uživatele
@@ -21,12 +21,194 @@ aplikační logiku (např. zmíněné přidání zboží do košíku či zobraze
 
 .[note]
 Architektura MVP je podobná architektuře MVC((Model-View-Controller)). Obě architektury se liší hlavně v úloze jejich
-cetrálního kamenu, tedy Presenter × Controller. Presenter hraje čistě roli prostředníka, který jen volá model a
+centrálního kamene, tedy Presenter × Controller. Presenter hraje čistě roli prostředníka, který jen volá model a
 výsledky předává view, kdežto Controller má navíc na starosti i některé události uživatelského rozhraní.
 
-Model již máme díky `Nette\Database` připravený. Zbývá nám tedy presenter a view.
+Model již máme díky `Nette\Database` připravený. Zbývá nám tedy presenter a view. V Nette má každý presenter vlastní
+sadu views, takže budeme obojí psát souběžně.
 
-Presenter
-*********
 
-Jak již bylo řečeno, presenter je třída, která spolupracuje s modelem a výsledná data předává view.
+`HomepagePresenter`
+*******************
+
+Jak již bylo řečeno, presenter je třída, která spolupracuje s modelem a výsledná data předává view. Nejprve upravíme
+`HomepagePresenter`. Ten bude zajišťovat zobrazení úvodní stránky aplikace. V kostře aplikace vypadá kód této třídy
+následovně:
+
+/---php
+class HomepagePresenter extends BasePresenter
+{
+
+	public function renderDefault()
+	{
+	    $this->template->anyVariable = 'any value';
+	}
+
+}
+\---
+
+Má tedy jednu jedinou metodu: `renderDefault()`. Ta se stará o předání dat view, který se bude jmenovat `default`.
+Šablonu tohoto view naleznete ve složce `templates/Homepage/`, konkrétně se jedná o soubor `default.latte`. Při běhu
+aplikace se nejprve vykonají požadované akce v presenteru, až pak se podle toho vykresluje šablona. Posloupnost
+těchto kroků zachycuje následující obrázek:
+
+[* media/lifecycle2.gif *]
+
+V diagramu si povšimněte metody `action<action>()`. V souvislosti s ní si musíme zavést nový pojem, a to "akce presenteru".
+Nejlepší bude tento pojem vysvětlit na příkladu: akcí presenteru může být například "zobrazení produktu". Interně jí nazveme
+`show`. Pokud chceme ale produkt zobrazit, může dojít k několika stavům: produkt je na skladě a můžeme jej objednat,
+produkt mohl být stažen z prodeje, vybraný produkt již nemusí existovat... Právě pro tyto jednotlivé stavy pak vytvoříme
+vlastní view, můžeme je tedy chápat jako konkrétní realizace zobrazení dané akce.
+
+Ve většině případů bude platit, že co akce, to view, proto pokud se o nic nestaráme, vykonává se akce a view se stejným
+jménem. V našem `HomepagePresenter`u by se tedy před metodou `renderDefault()` volala metoda `actionDefault()`, pokud
+by existovala. Během ní se však můžeme rozhodnout view změnit voláním metody `setView($view)`, například `$this->setView('error')`.
+Pak by po vykonání metody `actionDefault()` nedošlo k volání metody `renderDefault()`, ale `renderError()`. Také by se
+vykreslovala šablona `error.latte`.
+
+Nyní ale zpět k psaní kódu. Pokud chceme v šabloně nějaká data zobrazit, musíme presenter nějakým způsobem spojit
+s modelem. Model máme zaregistrovaný jako službu, takže se k němu i k jeho tabulkám můžeme pohodlně dostat.
+
+Spojení s modelem
+=================
+
+Pro pohodlnější přístup si připravíme v presenteru atribut `$model`. Do něj pak v metodě `startup()` přiřadíme instanci
+modelu pomocí metody `getService($service)`:
+
+/---php
+/** @var Model */
+private $model;
+
+public function startup()
+{
+	parent::startup();
+	$this->model = $this->getService('model');
+}
+\---
+
+Metoda `startup()` se volá vždy na začátku vyřizování požadavku presenterem. Svým způsobem přejímá činnost konstruktoru.
+Povšimněte si také volání `parent::startup()`. Často bude inicializační fáze společná pro několik presenterů, typicky
+v administraci webu, kde budeme na začátku chtít ověřit, zda je uživatel přihlášen a případně načíst i informace
+o aktuálně přihlášeném uživateli. Proto musíme volat vždy i metodu `startup()` rodičů. Nette toto volání kontroluje
+a upozorní, pokud na něj zapomeneme. Jinak by to mohlo vést k obtížně odhalitelným chybám a bezpečnostním slabinám.
+
+.[note]
+Vyhněte se přepisování konstruktoru presenteru. Vytváření presenteru zajišťuje Nette, proto by jeho přepsání
+vedlo k těžce odhalitelným chybám. Veškerá inicializace by měla proto proběhnout v metodě `startup()`.
+
+Nyní již můžeme model v presenteru použít. Vybereme tedy z tabulky `task` data a vložíme je do šablony. Budeme chtít
+zobrazit všechny nesplněné úkoly a seřadit vzestupně je podle času vytvoření:
+
+/---php
+public function renderDefault()
+{
+	$this->template->list = $this->model->getTasks()->order('created ASC');
+}
+\---
+
+Voláním `order()` nad objektem tabulky zajistíme setřídění dat. `Nette\Database` poskytuje pro dotazování do databáze takzvané
+"fluent interface". Dotaz postupně skládáme zřetězením volání funkcí, které budou reprezentovat jednotlivé části dotazu.
+Podporovány jsou téměř všechny aspekty jazyka SQL. Tato abstrakce je poměrně důležitá - pokud později vyměníme SQL databázi
+za jiné úložiště, stačí pouze implementovat objekty se stejným rozhraním a funkčnost zůstane stejná. Toto rozhraní ukážeme
+později na složitějších dotazech.
+
+.[node]
+Zvídavé čtenáře opět odkazuji do dokumentace na téma "Databáze & ORM":[http://doc.nette.org/cs/database].
+
+Šablona
+=======
+
+V šabloně `default.latte` máme nyní k dispozici proměnnou `$list`. Pojďme ji tedy využít. V šabloně je
+nyní uvítací stránka, tu můžeme bez obav smazat a nahradit jí vlastním kódem:
+
+/---html
+{block content}
+
+<h2>Nesplněné úkoly</h2>
+
+<table>
+	<thead>
+	<tr>
+		<th>Čas vytvoření</th>
+		<th>Úkol</th>
+		<th>Přiřazeno</th>
+	</tr>
+	</thead>
+	<tbody>
+	{foreach $list as $task}
+	<tr>
+		<td>{$task->created}</td>
+		<td>{$task->text}</td>
+		<td>{$task->user->name}</td>
+	</tr>
+	{/foreach}
+	</tbody>
+</table>
+
+{/block}
+\---
+
+`{block content}` a `{/block}` definuje obsahový blok. Nette takzvanou dědičnost šablon. Hlavní šablona definuje
+bloky, které pak zděděné šablony mohou (a některé musí) přepsat. Pokud není uvedeno jinak, tak šablona view dědí od
+šablony `@layout.latte`, kterou naleznete přímo ve složce `app/templates`. V ní se nachází řádek:
+
+/---html
+{include #content}
+\---
+
+Ten říká, že místo něj se má vložit blok s názvem `content`. Protože blok jinde definován není, je nutné tento blok
+definovat ve zděděné šabloně. Hned pod hlavičkou je uveden `{block head}{/block}`. Takový blok je možno přepsat,
+ale není to nutné. Pokud přepsán nebude, použije se místo něj výchozí obsah (zde prázdný řetězec).
+
+Dále máme v bloku klasickou tabulku. Ta obsahuje `<thead>` a `<tbody>` tak, jak jsme zvyklí. Uvnitř `<tbody>` je makro
+`{foreach}`. To se chová jako klasický `foreach` v PHP. Prochází proměnnou `$list` a položky ukládá do proměnné
+`$task`. V ní máme od databázové vrstvy jednotlivé sloupce. Všimněte si, že při výpisu se nemusíme starat o escapování
+pomocí `htmlspecialchars()`. Nette se o escapování postará samo. Dokonce escapování provádí v závislosti na kontextu -
+v bloku JavaScriptu bude používat `json_encode()`, v HTML `htmlspecialchars()`...
+
+Další zajímavostí je konstrukce `$task->user->name`. Jak již bylo řešeno v předchozí kapitole o databázi, sloupec `user_id`
+považuje databázová vrstva za odkaz na tabulku `user`. Díky tomu se pak můžeme takto odkázat na tabulku `user`.
+
+Nyní si již můžeme výsledek zobrazit:
+
+[* list-table.png *]
+
+Povšimněte si panelu vpravo dole. Tento panel Nette zapíná jen ve vývojovém prostředí a zobrazují se na něm ladící informace.
+Po připojení k databázi nám v panelu přibyla nový položka - položené dotazy. Najetím na ní se nám zobrazí seznam všech
+dotazů, které byly pro vygenerování stránky použity. Dotaz si můžeme ihned nechat "vysvětlit" (explain).
+
+[* debug-panel-sql.png *]
+
+Vraťme se ale ještě na momentík k výpisu úkolů. Datum je zde uvedeno v poměrně nepěkném formátu. Drobnou úpravou to
+však v mžiku napravíme. Výpis upravíme takto:
+
+/---html
+<td>{$task->created|date:'j. n. Y'}</td>
+\---
+
+Tím zajistíme, že před výpisem proměnné se na ní aplikuje tzv. helper. Helpery jsou malé funkce, které nám pomáhají
+jednoduše formátovat výpisy v šabloně. Helper `date` vypíše zadané datum v nějakém přívětivějším formátu. Tento
+formát je mu zadán jako parametr za dvojtečkou. Specifikátor může být stejný, jako v případě funkce `date()`, případně
+`strftime()`.
+
+.[note]
+Přehled všech helperů, které jsou k dispozici, je k nahlédnutí v dokumentaci v kapitole "Helpery":[http://doc.nette.org/cs/default-helpers].
+
+Nyní se ale vrhneme na další presenter.
+
+`TaskPresenter`
+***************
+
+Tato třída již v kostře není. Musíme si jí tedy vytvořit. Ve složce `app/presenters` vytvořte nový soubor
+`TaskPresenter.php`. Umístíme do ní prozatím prázdnou třídu, která bude dědit z `BasePresenter`u:
+
+/---php
+/**
+ * Presenter, který zajišťuje výpis seznamů úkolů.
+ */
+class TaskPresenter extends BasePresenter
+{
+
+}
+\---
+
