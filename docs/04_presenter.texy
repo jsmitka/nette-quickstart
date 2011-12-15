@@ -408,7 +408,7 @@ public function actionDefault($id)
 Pro tento view poté musíme vytvořit šablonu `notFound.latte` ve složce `app/templates/Task`:
 
 /---php
-{block #content}
+{block content}
 
 <h1>Seznam úkolů nenalezen</h1>
 
