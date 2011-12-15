@@ -29,8 +29,20 @@
 </head>
 
 <body>
-	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
 
-	{include #content}
+	<div id="sidebar">
+		<div class="task-lists">
+			<ul>
+				<li n:foreach="$taskLists as $list"><a n:href="Task: $list->id">{$list->title}</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div id="content">
+		<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+
+		{include #content}
+	</div>
+
 </body>
 </html>

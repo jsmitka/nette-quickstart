@@ -124,7 +124,7 @@ nyní uvítací stránka, tu můžeme bez obav smazat a nahradit jí vlastním k
 /---html
 {block content}
 
-<h2>Nesplněné úkoly</h2>
+<h1>Nesplněné úkoly</h1>
 
 <table>
 	<thead>
@@ -147,6 +147,12 @@ nyní uvítací stránka, tu můžeme bez obav smazat a nahradit jí vlastním k
 
 {/block}
 \---
+
+Ve vypisování šablony nám pomáhají takzvaná makra. Ta jsou uvedena ve složených závorkách a zastávají funkci různých
+jazykových konstrukcí. Šablony můžeme psát i bez nich, ale proč bychom to dělali, že?
+
+.[node]
+Seznam všech maker je samozřejmě v dokumentaci: "Výchozí Latte makra":[http://doc.nette.org/cs/default-macros].
 
 `{block content}` a `{/block}` definuje obsahový blok. Nette takzvanou dědičnost šablon. Hlavní šablona definuje
 bloky, které pak zděděné šablony mohou (a některé musí) přepsat. Pokud není uvedeno jinak, tak šablona view dědí od
@@ -179,7 +185,7 @@ dotazů, které byly pro vygenerování stránky použity. Dotaz si můžeme ihn
 
 [* debug-panel-sql.png *]
 
-Vraťme se ale ještě na momentík k výpisu úkolů. Datum je zde uvedeno v poměrně nepěkném formátu. Drobnou úpravou to
+Vraťme se ale ještě na moment k výpisu úkolů. Datum je zde uvedeno v poměrně nepěkném formátu. Drobnou úpravou to
 však v mžiku napravíme. Výpis upravíme takto:
 
 /---html
@@ -212,3 +218,206 @@ class TaskPresenter extends BasePresenter
 }
 \---
 
+`BasePresenter` je abstraktní společný předek všech presenterů v aplikaci. Můžeme v něm například provádět inicializaci,
+načítat data, která mají být společná pro všechny presentery a další zajímavé věci. My budeme jistě chtít mít přístup
+k modelu aplikace i bez toho, abychom musel do každého nově vytvořeného presenteru psát stejnou metodu startup.
+
+Proto si nyní odskočíme do `HomepagePresenter`u a přesuneme z něj atribut `$model` a metodu `startup` do `BasePresenter`u.
+Navíc nesmíme zapomenout změnit přístupový modifikátor z `private` na `protected`, abychom k němu mohli přistupovat
+ze zděděných tříd.
+
+.[note]
+Pokud si nejste jistí, co přesně klíčové slovíčko `protected` znamená, je načase se začíst do dokumentace PHP:
+"Classes and Objects":[http://cz.php.net/manual/en/language.oop5.php]. Bude to potřeba. Vážně.
+
+/---php
+abstract class BasePresenter extends Nette\Application\UI\Presenter
+{
+	/** @var Model */
+	protected $model;
+
+	public function startup()
+	{
+		parent::startup();
+		$this->model = $this->getService('model');
+	}
+}
+\---
+
+Nyní zpět do `TaskPresenter`u. V něm budeme chtít zobrazit jeden konkrétní seznam úkolů. Seznam, který chceme zobrazit,
+dostane presenter jako ID v adrese. Vytvoříme si privátní atribut `$taskList`, do kterého uložíme v metodě `actionDefault`
+záznam o seznamu úkolů:
+
+/---php
+public function actionDefault($id)
+{
+	$this->taskList = $this->model->getTaskLists()->find($id)->fetch();
+}
+\---
+
+Parametr `$id` bude obsahovat ID, které bude zadáno v databázi. O jeho naplnění se Nette postará za nás. Více o tomto
+mechanismu se dozvíme v sekci o routování, prozatím se spokojíme s pro programátora nejlepším závěrem "funguje to a
+nemusíme se o to starat".
+
+Získaný záznam spolu se seznamem úkolů předáme šabloně v metodě `renderDefault()`:
+
+/---php
+public function renderDefault($id)
+{
+	$this->template->taskList = $this->taskList;
+	$this->template->tasks = $this->taskList->related('task')->order('id');
+}
+\---
+
+Metoda `renderDefault` by měla mít stejné parametry, jako action, i když je přímo v metodě nevyužijeme.
+
+Šablona
+=======
+
+K view nám zbývá napsat jen šablonu. Ve složce `templates` vytvoříme podložku `Task` a do ní šablonu `default.latte`.
+Bude velmi podobná té předchozí:
+
+.[node]
+Při vytváření šablon na velikost písmen. Složka s názvem presenteru by měla začínat velkým písmenem, soubor se šablonou
+malým. Při vývoji na Windows to nepoznáme, ale pokud aplikaci přeneseme na linuxový server, způsobí to řadu chyb.
+
+/---html
+{block content}
+
+<h1>{$taskList->title}</h1>
+
+<table>
+	<thead>
+	<tr>
+		<th>Čas vytvoření</th>
+		<th>Úkol</th>
+		<th>Přiřazeno</th>
+	</tr>
+	</thead>
+	<tbody>
+	{foreach $tasks as $task}
+	<tr>
+		<td>{$task->created|date:'j. n. Y'}</td>
+		<td>{$task->text}</td>
+		<td>{$task->user->name}</td>
+	</tr>
+	{/foreach}
+	</tbody>
+</table>
+
+{/block}
+\---
+
+Nyní už bude vše fungovat! Počkat... ale jak se k nově vytvořené stránce dostat? Možná by bylo dobré si ještě vytvořit
+menu s výpisem všech seznamů úkolů....
+
+
+Navigace
+========
+
+Menu bude společné pro všechny části aplikace. Žhavý kandidát na umístění do `BasePresenter`u! Budeme jej muset vykreslit
+na každé stránce, takže použijeme metodu `beforeRender()`, která se provede vždy, nezávisle na view, které má být vykreslováno.
+
+/---php
+public function beforeRender()
+{
+	$this->template->taskLists = $this->model->getTaskLists()->order('title ASC');
+}
+\---
+
+Ještě musíme zajistit, aby se menu zobrazilo na každé stránce. Protože každá šablona view dědí od šablony `@layout.latte`,
+umístíme vykreslení právě do ní. Připravíme si rovnou základ pro nějaké rozumné rozvržení. Do tagu body přidáme následující
+kód:
+
+/---html
+<div id="sidebar">
+	<div class="task-lists">
+		<ul>
+			<li n:foreach="$taskLists as $list"><a href="{link Task: $list->id}">{$list->title}</a></li>
+		</ul>
+	</div>
+</div>
+
+<div id="content">
+	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+
+	{include #content}
+</div>
+\---
+
+Atribut `n:foreach` je druhý způsob, jak iterovat polem. Tento zápis je ekvivalentní, jako kdyby byl `foreach` umístěn
+kolem HTML tagu, ve kterém je uveden. Podobně funguje většina maker, která řídí tok programu: `if`, `for`, `while`...
+Pokud před makro napíšeme prefix `inner-`, bude se chovat, jako kdyby bylo napsáno uvnitř HTML tagu. Uvedený zápis
+bychom tedy mohli poupravit takto:
+
+/---html
+<ul n:inner-foreach="$taskLists as $list">
+	<li><a href="{link Task: $list->id}">{$list->title}</a></li>
+</ul>
+\---
+
+Výsledek by byl nezměněn.
+
+Zajímavější pro nás však bude nové makro `{link Task: $list->id}`. To vytváří URL adresu. Jako první parametr je cílová
+dvojice `Presenter:action`. Pokud `action` neuvedeme a za dvojtečku nic nenapíšeme, použije se výchozí, tedy default.
+Pokud se chceme odkazovat na jinou akci ve stejném presenteru, nemusíme presenter uvádět. Pak nesmí být uvedena ani
+dvojtečka, která má speciální význam. Jako další jsou uvedeny parametry, které se mají v adrese předat. Pokud je
+nepojmenujeme, tak je musíme uvést ve stejném pořadí, v jakém jsou uvedeny v signatuře akce (tedy metody
+`action<action>()`, případně `view<action>()`, pokud předchozí neexistuje). Parametry oddělujeme čárkou a pokud
+je chceme pojmenovat, uděláme to stejně jako v případě klíčů pole. Výše uvedený zápis je tedy ekvivalentní s ukecanějším
+
+/---html
+<li><a href="{link Task: id => $list->id}">{$list->title}</a></li>
+\---
+
+Pokud si chceme zápis ještě více usnadnit, existuje ještě makro `n:href`:
+
+/---html
+<li><a n:href="Task: $list->id">{$list->title}</a></li>
+\---
+
+Nyní bychom již na stránce měli vidět jednoduché menu. Kliknutím se dostaneme na výpis konkrétního seznamu úkolů.
+
+[* presenter-nav.png *]
+
+Podívejme se na adresu, kterou Nette pro odkazy vytvořilo: `/task/default/2`. Jak je vidět, v adrese je uveden presenter,
+akce i zadané ID. Tvar těchto adres lze plně ovlivnit pomocí routování. Opět bez jakýchkoliv zásahl do jiných částí
+aplikace.
+
+Pojďme si trošku zaexperimentovat. Co se stane, když změníme ID na neexistující? Chyba!
+
+[* debugger.png *]
+
+Ukázala se nám laděnka v celé své kráse. Jedná se o jeden z nejužitečnějších nástrojů v Nette. Ukazuje, kde přesně k
+chybě došlo a zachycuje stav aplikace v době chyby. Pokud by chyba byla v SQL dotazu, ukáže nám i problematický dotaz.
+
+Chyba `Call to a member function related() on a non-object` nám říká, že jsme se pokusili zavolat metodu `related` nad
+něčím, co není objekt. Pokud funkce `fetch()` nenalezne žádný výsledek, vrátí `FALSE`. To můžeme snadno ověřit a podle
+zareagovat na to změnou view:
+
+/---php
+public function actionDefault($id)
+{
+	$this->taskList = $this->model->getTaskLists()->find($id)->fetch();
+	if ($this->taskList === FALSE) {
+		$this->setView('notFound');
+	}
+}
+\---
+
+Pro tento view poté musíme vytvořit šablonu `notFound.latte` ve složce `app/templates/Task`:
+
+/---php
+{block #content}
+
+<h1>Seznam úkolů nenalezen</h1>
+
+<p>Litujeme, ale Vámi požadovaný seznam úkolů nebyl nalezen.</p>
+\---
+
+Pokud zkusíme opět přistoupit na neexistující ID, bude situace o poznání lepší:
+
+[* not-found.png *]
+
+Povšimněte si, že jsme nikde nevytvářeli metodu `renderNotFound()`. View může existovat i bez ní. Stačí jen vytvořit
+šablonu se správným názvem a je hotovo.

@@ -5,19 +5,13 @@
  */
 class HomepagePresenter extends BasePresenter
 {
-	/** @var Model */
-	private $model;
 
-	public function startup()
-	{
-		parent::startup();
-		$this->model = $this->getService('model');
-	}
-
-
+	/**
+	 * Výchozí view. Zobrazí všechny nesplněné úkoly.
+	 */
 	public function renderDefault()
 	{
-		$this->template->list = $this->model->getTasks()
+		$this->template->tasks = $this->model->getTasks()
 			->where(array('done' => 0))->order('created ASC');
 	}
 
