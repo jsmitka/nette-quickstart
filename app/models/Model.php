@@ -43,7 +43,7 @@ class Model extends Nette\Object
 	 */
 	public function getUsers()
 	{
-		return $this->database->table('users');
+		return $this->database->table('user');
 	}
 
 
