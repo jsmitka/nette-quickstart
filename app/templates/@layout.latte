@@ -19,8 +19,7 @@
 
 	<title>Nette Application Skeleton</title>
 
-	<link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css" type="text/css">
-	<link rel="stylesheet" media="print" href="{$basePath}/css/print.css" type="text/css">
+	<link rel="stylesheet" href="{$basePath}/css/tasklist.css" type="text/css">
 	<link rel="shortcut icon" href="{$basePath}/favicon.ico" type="image/x-icon">
 
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
@@ -30,18 +29,30 @@
 
 <body>
 
-	<div id="sidebar">
-		<div class="task-lists">
-			<ul>
-				<li n:foreach="$taskLists as $list"><a n:href="Task: $list->id">{$list->title}</a></li>
-			</ul>
+	<div id="header">
+		<div id="header-inner">
+			<div class="title"><a n:href="Homepage:">Úkolníček</a></div>
 		</div>
 	</div>
 
-	<div id="content">
-		<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+	<div id="container">
+		<div id="sidebar">
+			<div class="task-lists">
+				<ul>
+					<li n:foreach="$taskLists as $list"><a n:href="Task: $list->id">{$list->title}</a></li>
+				</ul>
+			</div>
+		</div>
 
-		{include #content}
+		<div id="content">
+			<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+
+			{include #content}
+		</div>
+
+		<div id="footer">
+
+		</div>
 	</div>
 
 </body>

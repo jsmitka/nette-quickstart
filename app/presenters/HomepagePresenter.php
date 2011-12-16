@@ -12,7 +12,7 @@ class HomepagePresenter extends BasePresenter
 	public function renderDefault()
 	{
 		$this->template->tasks = $this->model->getTasks()
-			->where(array('done' => 0))->order('created ASC');
+			->where(array('done' => false))->order('created ASC');
 	}
 
 }

@@ -1,0 +1,144 @@
+
+@baseColor: #0499da;
+@altColor: #0065cd;
+@import "mixins.less";
+
+
+body {
+	font-size: small;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+#header {
+    .gradient(darken(@baseColor, 10%), darken(@altColor, 10%));
+	height: 40px;
+}
+
+#header-inner {
+	width: 840px;
+	margin: 0 auto;
+}
+
+#header div.title {
+	padding: 8px 12px;
+	font-size: 150%;
+	color: #FFF;
+	text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
+}
+
+#header a {
+	color: #FFF;
+	text-decoration: none;
+}
+
+#header a:hover {
+	text-decoration: underline;
+}
+
+#container {
+	overflow: hidden;
+	width: 840px;
+	margin:0 auto;
+}
+
+#sidebar {
+	float: left;
+	width: 210px;
+
+}
+
+#content {
+	margin-left: 220px;
+	padding: 20px;
+	border-left: 1px solid #eee;
+}
+
+#footer {
+	text-align: center;
+	color: #888;
+	margin-top: 1ex;
+	border-top: 1px solid #ddd;
+	padding: 3px 12px;
+}
+
+
+/*** Navigace. ***/
+
+div.task-lists {
+	ul {
+    	margin: 0;
+    	padding: 0;
+    	list-style: none;
+    	display: block;
+    }
+
+    li {
+    	display: block;
+    	margin: 1ex;
+    }
+
+    a {
+    	text-decoration: none;
+    	display: block;
+    	color: #666;
+    	border-bottom: 1px solid #ddd;
+    	font-size: 125%;
+    	padding: 0 1ex 1px;
+
+    	&:hover { color: #333; border-bottom-color: #555; }
+    }
+}
+
+/*** Titulky ***/
+
+h1 {
+	color: #404040;
+	border-bottom: 1px solid #cacaca;
+	font-size: 200%;
+	padding: 0 0 4px;
+	margin: 0 0 1em;
+}
+
+
+/*** Odkazy ***/
+
+a {
+	color: #0069D6;
+}
+
+
+/*** Tabulky ***/
+
+table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin-bottom: 1.4em;
+}
+
+thead th {
+	font-size: 112%;
+	border-bottom: 1px solid #aaa;
+}
+
+tbody {
+
+}
+
+th, td {
+	padding: 5px 6px 4px;
+}
+
+td {
+	border-top: 1px solid #ddd;
+}
+
+tr.even {
+	background-color: #FAFAFA;
+}
+
+tr.odd {
+	background-color: #F2F2F2;
+}

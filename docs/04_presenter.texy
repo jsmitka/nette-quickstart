@@ -102,15 +102,20 @@ zobrazit všechny nesplněné úkoly a seřadit vzestupně je podle času vytvo�
 /---php
 public function renderDefault()
 {
-	$this->template->list = $this->model->getTasks()->order('created ASC');
+	$this->template->tasks = $this->model->getTasks()
+    			->where(array('done' => false))->order('created ASC');
 }
 \---
 
-Voláním `order()` nad objektem tabulky zajistíme setřídění dat. `Nette\Database` poskytuje pro dotazování do databáze takzvané
-"fluent interface". Dotaz postupně skládáme zřetězením volání funkcí, které budou reprezentovat jednotlivé části dotazu.
-Podporovány jsou téměř všechny aspekty jazyka SQL. Tato abstrakce je poměrně důležitá - pokud později vyměníme SQL databázi
-za jiné úložiště, stačí pouze implementovat objekty se stejným rozhraním a funkčnost zůstane stejná. Toto rozhraní ukážeme
-později na složitějších dotazech.
+`Nette\Database` poskytuje pro dotazování do databáze takzvané "fluent interface". Dotaz postupně skládáme zřetězením
+volání funkcí, které budou reprezentovat jednotlivé části dotazu. Podporovány jsou téměř všechny aspekty jazyka SQL.
+Tato abstrakce je poměrně užitečná - pokud později vyměníme SQL databázi za jiné úložiště, stačí pouze implementovat
+objekty se stejným rozhraním a funkčnost zůstane stejná. Toto rozhraní ukážeme později na složitějších dotazech.
+
+Voláním `where()` nad objektem tabulky definujeme podmínku, podle které chceme záznamy vybírat. Můžeme jí předat asociativní
+pole ve formátu `sloupec` -> `hodnota`, případně rovnou kus SQL dotazu s parametry pokud nám prosté vybírání podle
+rovnosti nestačí, nebo chceme použít složitější podmínky. Podobně voláním `order()` zajistíme setřídění dat vzestupně
+podle sloupce `created`.
 
 .[node]
 Zvídavé čtenáře opět odkazuji do dokumentace na téma "Databáze & ORM":[http://doc.nette.org/cs/database].
@@ -330,18 +335,30 @@ umístíme vykreslení právě do ní. Připravíme si rovnou základ pro nějak
 kód:
 
 /---html
-<div id="sidebar">
-	<div class="task-lists">
-		<ul>
-			<li n:foreach="$taskLists as $list"><a href="{link Task: $list->id}">{$list->title}</a></li>
-		</ul>
+<div id="header">
+	<div id="header-inner">
+		<div class="title"><a href="{link Homepage:}">Úkolníček</a></div>
 	</div>
 </div>
 
-<div id="content">
-	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+<div id="container">
+	<div id="sidebar">
+		<div class="task-lists">
+			<ul>
+				<li n:foreach="$taskLists as $list"><a href="{link Task: $list->id}">{$list->title}</a></li>
+			</ul>
+		</div>
+	</div>
 
-	{include #content}
+	<div id="content">
+		<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+
+		{include #content}
+	</div>
+
+	<div id="footer">
+
+	</div>
 </div>
 \---
 
@@ -421,3 +438,32 @@ Pokud zkusíme opět přistoupit na neexistující ID, bude situace o poznání 
 
 Povšimněte si, že jsme nikde nevytvářeli metodu `renderNotFound()`. View může existovat i bez ní. Stačí jen vytvořit
 šablonu se správným názvem a je hotovo.
+
+
+
+Ostylování
+**********
+
+Aplikace byla prozatím poměrně smutná. Černobílým HTML dnes již nikoho neohromíte, proto je načase s tím něco udělat.
+Stáhneme si tedy soubor "tasklist.css":[tasklist.css], uložíme ho do složky `www/css` a odkážeme se na něj z hlavičky
+v `@layout.latte`. Předchozí definice stylů odstraníme.
+
+.[note]
+Stylesheet používá některé vlastnosti CSS3. Snahou bylo vmáčknout celý design do jednoho jediného souboru, proto se
+připravte na CSS3 přechody, stylování tlačítek a další pěkné věci. Pokud máte starší prohlížeč, budete jen ochuzeni o některé
+efekty, aplikace však bude vypadat a fungovat velmi podobně.
+
+/---html
+<link rel="stylesheet" href="{$basePath}/css/tasklist.css" type="text/css">
+\---
+
+Použitá proměnná `{$basePath}` obsahuje absolutní URL k našemu webu na serveru. Kvůli generování hezkých adres pomocí
+`mod_rewrite` je adresa aktuální stránky čistě virtuální. Složka `task/default` nikde neexistuje, proto nemůžeme použít
+relativní adresy a nesmíme zapomínat na `{$basePath}` při vkládání externích zdrojů.
+
+
+Závěr
+*****
+
+To je prozatím vše. Úspěšně jsme vytvořili seznam všech nedokončených úkolů a zobrazení jednotlivých seznamů úkolů.
+Můžeme se vrhnout do použití formulářů.

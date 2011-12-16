@@ -1,0 +1,114 @@
+body {
+  font-size: small;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+#header {
+  background-color: #004c9a;
+  background-repeat: repeat-x;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #0376a8), color-stop(100%, #004c9a));
+  background-image: -webkit-linear-gradient(top, #0376a8, #004c9a);
+  background-image: -moz-linear-gradient(top, #0376a8, #004c9a);
+  background-image: -o-linear-gradient(top, #0376a8, #004c9a);
+  background-image: -ms-linear-gradient(top, #0376a8, #004c9a);
+  background-image: linear-gradient(top, #0376a8, #004c9a);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0376a8', endColorstr='#004c9a', GradientType=0);
+  height: 40px;
+}
+#header-inner {
+  width: 840px;
+  margin: 0 auto;
+}
+#header div.title {
+  padding: 8px 12px;
+  font-size: 150%;
+  color: #FFF;
+  text-shadow: rgba(0, 0, 0, 0.5) 1px 1px 2px;
+}
+#header a {
+  color: #FFF;
+  text-decoration: none;
+}
+#header a:hover {
+  text-decoration: underline;
+}
+#container {
+  overflow: hidden;
+  width: 840px;
+  margin: 0 auto;
+}
+#sidebar {
+  float: left;
+  width: 210px;
+}
+#content {
+  margin-left: 220px;
+  padding: 20px;
+  border-left: 1px solid #eee;
+}
+#footer {
+  text-align: center;
+  color: #888;
+  margin-top: 1ex;
+  border-top: 1px solid #ddd;
+  padding: 3px 12px;
+}
+/*** Navigace. ***/
+div.task-lists ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: block;
+}
+div.task-lists li {
+  display: block;
+  margin: 1ex;
+}
+div.task-lists a {
+  text-decoration: none;
+  display: block;
+  color: #666;
+  border-bottom: 1px solid #ddd;
+  font-size: 125%;
+  padding: 0 1ex 1px;
+}
+div.task-lists a:hover {
+  color: #333;
+  border-bottom-color: #555;
+}
+/*** Titulky ***/
+h1 {
+  color: #404040;
+  border-bottom: 1px solid #cacaca;
+  font-size: 200%;
+  padding: 0 0 4px;
+  margin: 0 0 1em;
+}
+/*** Odkazy ***/
+a {
+  color: #0069D6;
+}
+/*** Tabulky ***/
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 1.4em;
+}
+thead th {
+  font-size: 112%;
+  border-bottom: 1px solid #aaa;
+}
+th, td {
+  padding: 5px 6px 4px;
+}
+td {
+  border-top: 1px solid #ddd;
+}
+tr.even {
+  background-color: #FAFAFA;
+}
+tr.odd {
+  background-color: #F2F2F2;
+}
