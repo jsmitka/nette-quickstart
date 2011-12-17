@@ -14,4 +14,14 @@ class HomepagePresenter extends SecuredPresenter
 		return $taskList;
 	}
 
+
+	public function createComponentUserTasks()
+	{
+		$taskList = new TaskList($this->model->getTasks()->where(array(
+			'done' => false, 'user_id' => $this->getUser()->getId()
+		)));
+		$taskList->setModel($this->model);
+		return $taskList;
+	}
+
 }
