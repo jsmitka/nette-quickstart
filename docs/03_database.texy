@@ -65,7 +65,7 @@ CREATE TABLE `task` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `text` varchar(100) NOT NULL,
   `created` datetime NOT NULL,
-  `done` tinyint(1) unsigned NOT NULL,
+  `done` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `user_id` int(10) unsigned NOT NULL,
   `tasklist_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
@@ -90,7 +90,7 @@ CREATE TABLE `user` (
 );
 \---
 
-Můžete si také stáhnout skript pro MySQL: "quickstart.mysql.sql":[quickstart.mysql.sql]. Také si stáhněte ukázková data
+Můžete si také stáhnout celý skript pro MySQL: "quickstart.mysql.sql":[quickstart.mysql.sql]. Také si stáhněte ukázková data
 pro MySQL: "data.mysql.sql":[data.mysql.sql]. To je z hlediska struktury databáze vše. Nyní se pustíme do psaní
 samotného modelu.
 

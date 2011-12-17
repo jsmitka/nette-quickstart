@@ -9,7 +9,7 @@ CREATE TABLE `task` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `text` varchar(100) NOT NULL,
   `created` datetime NOT NULL,
-  `done` tinyint(1) unsigned NOT NULL,
+  `done` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `user_id` int(10) unsigned NOT NULL,
   `tasklist_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
