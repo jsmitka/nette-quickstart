@@ -1,0 +1,126 @@
+Formuláře
+#########
+
+.[perex]
+V této kapitole se seznámíme s formuláří a některými nástrahami, které k nim patří. Vytvoříme si jednoduchý formulář
+pro zakládání nových úkolů a další pro vytváření nových seznamů.
+
+
+--------
+
+
+Formuláře z Nette lze používat samostatně, nezávisle na zbytku frameworku. Pokud se je ale rozhodneme používat v rámci
+Nette aplikaci ve spojení s presentery a plným kompomentovým modelem, bude jejich používání ještě o něco jednodušší
+a hlavně radostnější.
+
+Základní třídy sídlí ve jmenném prostoru `Nette\Forms`. Je zde jak základní třída formuláře, tak veškeré formulářové
+komponenty a třídy pro vykreslování. Pokud budeme formulář používat v Nette aplikaci, budeme ještě potřebovat třídu
+`Nette\Application\UI\Form`, která obsahuje napojení na presenter a využívá signálů a událostí.
+
+Nejlepší ale bude si vše ukázat v praxi.
+
+
+Formulář pro zadání úkolu
+*************************
+
+Tento formulář bude zobrazen nad seznamem úkolů v dané kategorii. Jeho definici tedy umístíme do `TaskPresenter`u.
+Bude obsahovat políčko s textem a jeden selectbox na výběr uživatele, kterému má být úkol přiřazen. Jeho definice bude
+vypadat následovně:
+
+/---php
+protected function createComponentTaskForm()
+{
+	$form = new Form();
+	$form->addText('text', 'Úkol:', 40, 100)
+		->addRule(Form::FILLED, 'Je nutné zadat text úkolu.');
+	$form->addSelect('user_id', 'Pro:', $this->model->getUsers()->fetchPairs('id', 'name'))
+		->setPrompt('- Vyberte -')
+		->addRule(Form::FILLED, 'Je nutné vybrat, komu je úkol přiřazen.');
+	$form->addSubmit('create', 'Vytvořit');
+	return $form;
+}
+\---
+
+Funkce `createComponentTaskForm()` je speciální tovární funkcí na komponenty. Kdykoliv presenter požádáme o instanci
+komponenty s názvem `taskForm`, tak se nejprve podívá, zda již takovovou komponentnu nemá vytvořenou. Pokud ne, tak si
+zavolá právě tuto funkci. Funkce buď jen komponentnu vytvoří a vrátí ji jako svou návratovou hodnotu, nebo jí rovnou
+připojí k presenteru a pak je návratová hodnota ignorována (a `return` nemusí být vůbec uveden). Připojení k presenteru
+se nejjednodušeji provede uvedením rodiče (v presenteru `$this`) a názvu komponenty v konstruktoru:
+
+/---php
+$form = new Form($this, 'taskForm');
+\---
+
+Název komponenty také dostává funkce jako první argument, takže do kódu nemusíme název psát přímo:
+
+/---php
+protected function createComponentTaskForm($name)
+{
+	$form = new Form($this, $name);
+	// ...
+}
+\---
+
+Pokud formulář připojíte ihned v konstruktoru, budou si jednotlivé prvky při sestavování průběžně načítat data,
+která byla odeslána. Jinak jsou oba zápisy funkčně prakticky stejné.
+
+Pojďme si nyní projít jednotlivé prvky formuláře:
+
+/---php
+$form->addText('text', 'Úkol:', 40, 100)
+	->addRule(Form::FILLED, 'Je nutné zadat text úkolu.');
+\---
+
+Přidá nové textové políčko s názvem `test` a popiskou `Úkol:`. Jeho velikost bude 40 znaků a maximální délka 100.
+Metoda `addRule` přidává validační pravidlo. Prvním parametrem je konstanta, která udává typ pravidla. Pravidlo
+`Form::FILLED` ověřuje, zda bylo políčko vyplněno. Druhý parametr je nepovinný a definuje hlášku, která se uživateli
+zobrazí v případě, že pravidlo nebylo splněno. Metoda má ještě třetí nepovinný parametr a tím jsou parametry validace,
+například v případě pravidla `Form::MIN_LENGTH` udává tento parametr minimální délku řetězce, který uživatel musí zadat.
+
+.[note]
+Další validační pravidla jsou uvedena v dokumentaci k formulářům. "Obecná validační pravidla":[http://doc.nette.org/cs/forms#toc-validace]
+lze aplikovat na všechny prvky, dále pak má každý prvek vlastní sadu pravidel, která na něj lze aplikovat. Podívejte
+se například na pravidla k "textovému políčku":[http://doc.nette.org/cs/forms#toc-addtext].
+
+/---php
+$form->addSelect('user_id', 'Pro:', $this->model->getUsers()->fetchPairs('id', 'name'))
+	->setPrompt('- Vyberte -')
+	->addRule(Form::FILLED, 'Je nutné vybrat, komu je úkol přiřazen.');
+\---
+
+Tento kód přidává do formuláře selectbox. První dva parametry jsou stejné, jak v předchozím případě. Třetí argument
+je asociativní pole ve tvaru `hodnota` -> `popis volby`. Takové pole můžeme získat metodou `fetchPairs()` zavolanou nad
+objektem tabulky. `fetchPairs('id', 'name')` použije jako klíč v poli ID uživatele a jako popisku volby jeho jméno.
+Metoda `setPrompt()` přidá na začátek volbu s danou popiskou a prázdnou hodnotou. Taková volba pak nám umožňuje oddělit
+situaci, kdy uživatel prvek skutečně nevyplnil, a kdy jen ponechal v prvku výchozí hodnotu. V kombinaci s validačním
+pravidlem `Form::FILLED` pak způsobí, že uživatel musí vždy nějaký prvek vybrat.
+
+Posledním prvkem je odesílací tlačítko:
+
+/---php
+$form->addSubmit('create', 'Vytvořit');
+\---
+
+Parametry jsou opět stejné. Popiska tlačítka tak bude `Vytvořit`.
+
+Nyní máme tento jednoduchý formulář téměř kompletní. Zbývá nám jej jen vykreslit. Přesuneme se tedy do šablony
+`Task/default.latte` a nad tabulku s výpisem prvků přidáme:
+
+/---html
+<fieldset>
+	<legend>Přidat úkol</legend>
+
+	{control taskForm}
+</fieldset>
+\---
+
+Povšimněte si nového makra `{control}`. To zajistí vykreslení komponenty se zadaným názevem. V našem přípdě presenter
+nejprve zjistí, zda již existuje komponenta s názvem `taskForm`. Pokud neexistuje, zavolá si metodu `createComponentTaskForm`
+a komponentu si vytvoří. Pak zajistí vykreslení pomocí metody `render()`, kterou má formulář definovanou. Blíže si ji
+představíme v další kapitole.
+
+Na stránce bychom teď měli vidět následující výsledek:
+
+[* 05_taskForm-control.png *]
+
+
