@@ -112,3 +112,24 @@ tr.even {
 tr.odd {
   background-color: #F2F2F2;
 }
+/*** Flash zprávičky ***/
+div.flash {
+  padding: .8em;
+  margin-bottom: 1em;
+  border: 2px solid #ddd;
+}
+div.flash.success {
+  background: #E6EFC2;
+  color: #264409;
+  border-color: #C6D880;
+}
+div.flash.info {
+  background: #FFF6BF;
+  color: #514721;
+  border-color: #FFD324;
+}
+div.flash.error {
+  background: #FBE3E4;
+  color: #8a1f11;
+  border-color: #FBC2C4;
+}
