@@ -21,6 +21,8 @@ Začneme tím, že si vytvoříme složku `app/components`. Do ní budeme uklád
 konstruktor a metodu `render()`:
 
 /---php
+use Nette\Application\UI;
+
 class TaskList extends UI\Control
 {
 	/** @var \Nette\Database\Table\Selection */
@@ -43,7 +45,10 @@ class TaskList extends UI\Control
 
 Konstruktor má jediný povinný parametr - výraz, podle kterého budeme úkoly vybírat. Další dva parametry se jen předávají
 konstruktoru rodiče a mají stejný význam, jako parametry v případě konstruktoru formuláře - slouží k připojení
-komponenty k presenteru ihned při vytvoření.
+komponenty k presenteru ihned při vytvoření. Všimněte si, že jako typ rodiče je uvedeno `Nette\ComponentModel\IContainer`.
+Komponenta může být tedy připojena k jakémukoliv objektu, který toto rozhraní implementuje. Tím je i objekt `Control`
+samotný - do komponenty tak můžeme vnořovat libovolné jiné komponenty. Také můžeme použít stejné tovární metody
+`createComponent`, jaké jsme používali v presenteru.
 
 Metoda `render()` zajišťuje vykreslení šablony. Podobně jako u presenteru je i v komponentách k dispozici šablona.
 Před použitím se jí jen musí nastavit soubor, který se bude vykreslovat. To se udělá voláním `setFile()`. Pak už
@@ -258,9 +263,18 @@ Jako cíl odkazu je však uveden `markDone!`, tedy název signálu s vykřiční
 jen na aktuální akci presenteru, nelze tedy současně s ním zaslat změnu akce. Jinak platí stejná pravidla, jako
 v případě normálního odkazování - parametry můžeme, ale nemusíme pojmenovávat, pokud je uvedeme ve správném pořadí.
 
+Presenter je také svým způsobem komponentou. To mimo jiné znamená, že i v presenteru můžeme používat signály. Právě
+proto je na konci odkazu `!`. Slouží k oddělení akce od signálu. V případě komponent můžeme
+
 Další změnou je přidání třídy `done` řádkám s již splněnými úkoly. Vidíte tak makro `n:class` s více třídami v praxi.
 
 Nyní bychom měli mít následujicí výsledek:
 
 [* 06_tasklist.png *]
 
+
+Závěr
+*****
+
+Vytvořili jsme komponentu, která nám umožní pohodlně zobrazit seznam úkolů kdekoliv v aplikaci. Příště se podíváme
+na přihlašování a ověřování uživatelů.
