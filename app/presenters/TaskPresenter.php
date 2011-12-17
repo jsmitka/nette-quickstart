@@ -34,7 +34,9 @@ class TaskPresenter extends BasePresenter
 
 	protected function createComponentTaskList()
 	{
-		return new TaskList($this->taskList->related('task')->order('created'));
+		$taskList = new TaskList($this->taskList->related('task')->order('done, created'));
+		$taskList->setModel($this->model);
+		return $taskList;
 	}
 
 

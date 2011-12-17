@@ -151,4 +151,116 @@ je opět velmi jednoduché:
 {/block}
 \---
 
-A to je vše. Úspěšně jsme oba výpisy úkolů nahradili komponentou.
+A to je vše. Úspěšně jsme oba výpisy úkolů nahradili komponentou. Zatím však máme pouze výpis. Bylo by dobré mít možnost
+i přidané úkoly označit jako splněné...
+
+
+Signály
+*******
+
+Signály umožňují komponentám reagovat na akce od uživatele. Příkladem signálu může být změna řazení tabulky, požadavek
+na zobrazení podrobnějších informací, nebo právě označení úkolu jako splněného. Signál samotný je předán v adrese
+a jeho parametry jsou připojeny k aktuálním parametrům stránky. Je tedy realizován novým požadavkem na server.
+
+Před tím, než začneme signál psát, musíme naší komponentě navíc předat objekt modelu, aby vůbec mohla aktualizovat
+stav úkolu. To vyřešíme přidáním privátního atributu `$model`, které budeme nastavovat z presenteru:
+
+/---php
+/** @var Model */
+private $model;
+
+/**
+ * @param \Model $model
+ */
+public function setModel($model)
+{
+	$this->model = $model;
+}
+
+/**
+ * @return \Model
+ */
+public function getModel()
+{
+	return $this->model;
+}
+\---
+
+Volání `setModel()` také musíme vložit do metod, které vytvářejí komponentu. V `TaskPresenter`:
+
+/---php
+protected function createComponentTaskList()
+{
+	$taskList = new TaskList($this->taskList->related('task')->order('done, created'));
+	$taskList->setModel($this->model);
+	return $taskList;
+}
+\---
+
+V `HomepagePresenter`:
+
+/---php
+public function createComponentIncompleteTasks()
+{
+	$taskList = new TaskList($this->model->getTasks()
+		->where(array('done' => false))->order('created ASC'));
+	$taskList->setModel($this->model);
+	return $taskList;
+}
+\---
+
+Komponenta nyní má k dispozici model a může jej využívat. Přidáme do ní tedy signál `markDone`. To prvedeme vytvořením
+metody `handleMarkDone()`, která jako jediný parametr bude mít ID úkolu, který chceme označit jako splněný:
+
+/---php
+public function handleMarkDone($taskId)
+{
+	$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
+	$this->presenter->redirect('this');
+}
+\---
+
+Metoda `update` funguje obdobně, jako metoda insert. Před jejím voláním je však nutno specifikovat pomocí `where()`,
+jaké záznamy se mají upravit. Je nutné, aby `where()` bylo **před** voláním `update`, jinak se nejprve provede `UPDATE`
+bez `WHERE` (a tím pádem na celé tabulce) a až pak se přidají podmínky, které samozřejmě již nic neovlivní.
+
+Po provedení aktualizace opět musíme provést přesměrování, jinak by se stránka uložila do historie prohlížeče. Metodu
+`redirect()` je nutno volat nad presenterem.
+
+Signál z šablony zavoláme následovně:
+
+/---html
+<table class="tasks">
+	<thead>
+	<tr>
+		<th>&nbsp;</th>
+		<th>Úkol</th>
+		<th>Přiřazeno</th>
+		<th>&nbsp;</th>
+	</tr>
+	</thead>
+	<tbody>
+	{foreach $tasks as $task}
+	<tr n:class="$iterator->isOdd() ? odd : even, $task->done ? done">
+		<td>{$task->created|date:'j. n. Y'}</td>
+		<td>{$task->text}</td>
+		<td>{$task->user->name}</td>
+		<td><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick">hotovo</a></td>
+	</tr>
+	{/foreach}
+	</tbody>
+</table>
+\---
+
+Upravili jsme sloupečky tabulky. V posledním sloupečku je nyní odkaz na označení úkolu jako splněného. `n:if` zajistí,
+že se zobrazí pouze u nesplněných úkolů. Odkaz `n:href` je velmi podobný způsobu odkazování, které jsme již dělali.
+Jako cíl odkazu je však uveden `markDone!`, tedy název signálu s vykřičníkem na konci. Signál je možné posílat vždy
+jen na aktuální akci presenteru, nelze tedy současně s ním zaslat změnu akce. Jinak platí stejná pravidla, jako
+v případě normálního odkazování - parametry můžeme, ale nemusíme pojmenovávat, pokud je uvedeme ve správném pořadí.
+
+Další změnou je přidání třídy `done` řádkám s již splněnými úkoly. Vidíte tak makro `n:class` s více třídami v praxi.
+
+Nyní bychom měli mít následujicí výsledek:
+
+[* 06_tasklist.png *]
+

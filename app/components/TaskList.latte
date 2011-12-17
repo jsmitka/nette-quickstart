@@ -1,17 +1,19 @@
-<table>
+<table class="tasks">
 	<thead>
 	<tr>
-		<th>Čas vytvoření</th>
+		<th>&nbsp;</th>
 		<th>Úkol</th>
 		<th>Přiřazeno</th>
+		<th>&nbsp;</th>
 	</tr>
 	</thead>
 	<tbody>
 	{foreach $tasks as $task}
-	<tr n:class="$iterator->isOdd() ? odd : even">
+	<tr n:class="$iterator->isOdd() ? odd : even, $task->done ? done">
 		<td>{$task->created|date:'j. n. Y'}</td>
 		<td>{$task->text}</td>
 		<td>{$task->user->name}</td>
+		<td><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick">hotovo</a></td>
 	</tr>
 	{/foreach}
 	</tbody>
