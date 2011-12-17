@@ -52,7 +52,7 @@ class TaskPresenter extends BasePresenter
 
 
 	/**
-	 * Zpracování odeslaného formuláře taskForm.
+	 * Zpracování odeslaného formuláře taskForm. Vytvoří nový úkol v aktuálním seznamu úkolů.
 	 * @param Nette\Application\UI\Form $form
 	 */
 	public function taskFormSubmitted(Form $form)

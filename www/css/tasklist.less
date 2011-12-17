@@ -93,10 +93,6 @@ div.task-lists {
     }
 }
 
-.taskForm input[type=submit] {
-	float: right;
-}
-
 
 /*** Titulky ***/
 
@@ -155,7 +151,14 @@ tr.odd {
 
 fieldset {
 	border: 1px solid #bbb;
-	margin-bottom: 1.5em;
+	border-width: 1px 0;
+	margin: 1.5em 0;
+	padding: 1ex 0;
+}
+
+legend {
+	font-weight: bold;
+	margin-left: 1em;
 }
 
 label {
@@ -178,6 +181,10 @@ form {
 			margin-left: 150px;
 		}
 	}
+}
+
+.task-form input[type=submit] {
+	float: right;
 }
 
 

@@ -187,7 +187,7 @@ párového `{label /}`. Jejich názvy mluví za vše, proto si je ukážeme v pr
 
 /---html
 {form taskForm}
-<div class="taskForm">
+<div class="task-form">
 	{label text /} {input text size => 30, autofocus => true} {label userId /} {input userId} {input create}
 </div>
 {/form}
@@ -206,3 +206,52 @@ Výsledný formulář bude nyní vypadat takto:
 
 [* 05_taskForm-manual.png *]
 
+Nyní vytvoříme další formulář, tentokrát pro vytvoření seznamu úkolů.
+
+
+Formulář na vytvoření seznamu úkolů
+===================================
+
+Tento formulář by bylo vhodné umístit do levého sloupce, ihned pod seznam úkolů. Bude zobrazen na každé stránce, proto
+jej budeme definovat v `BasePresenteru`. Protože tento formulář je velmi podobný, rovnou uveďme kód. `BasePresenter`:
+
+/---php
+protected function createComponentNewTasklistForm()
+{
+	$form = new Form();
+	$form->addText('title', 'Název:', 15, 50)
+		->addRule(Form::FILLED, 'Musíte zadat název seznamu úkolů.');
+	$form->addSubmit('create', 'Vytvořit');
+	$form->onSuccess[] = callback($this, 'newTasklistFormSubmitted');
+	return $form;
+}
+
+public function newTasklistFormSubmitted(Form $form)
+{
+	$this->model->getTaskLists()->insert(array(
+		'title' => $form->values->title
+	));
+	$this->flashMessage('Seznam úkolů založen.', 'success');
+	$this->redirect('this');
+}
+\---
+
+V šabloně `@layout.latte`:
+
+/---html
+<div id="sidebar">
+	<div class="task-lists">
+		<ul>
+			<li n:foreach="$taskLists as $list"><a n:href="Task: $list->id">{$list->title}</a></li>
+		</ul>
+	</div>
+
+	<fieldset>
+		<legend>Nový seznam</legend>
+		{form newTasklistForm}
+		<div class="new"
+		{input title}
+		{/form}
+	</fieldset>
+</div>
+\---

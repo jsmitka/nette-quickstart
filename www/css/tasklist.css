@@ -77,9 +77,6 @@ div.task-lists a:hover {
   color: #333;
   border-bottom-color: #555;
 }
-.taskForm input[type=submit] {
-  float: right;
-}
 /*** Titulky ***/
 h1 {
   color: #404040;
@@ -118,7 +115,13 @@ tr.odd {
 /*** Formuláře ***/
 fieldset {
   border: 1px solid #bbb;
-  margin-bottom: 1.5em;
+  border-width: 1px 0;
+  margin: 1.5em 0;
+  padding: 1ex 0;
+}
+legend {
+  font-weight: bold;
+  margin-left: 1em;
 }
 label {
   font-weight: bold;
@@ -135,6 +138,9 @@ form div.pair label {
 }
 form div.pair div.input {
   margin-left: 150px;
+}
+.task-form input[type=submit] {
+  float: right;
 }
 /*** Flash zprávičky ***/
 div.flash {
