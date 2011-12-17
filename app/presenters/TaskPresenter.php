@@ -5,7 +5,7 @@ use Nette\Application\UI\Form;
 /**
  * Presenter, který zajišťuje výpis seznamů úkolů.
  */
-class TaskPresenter extends BasePresenter
+class TaskPresenter extends SecuredPresenter
 {
 	/** @var \Nette\Database\Table\ActiveRow */
 	private $taskList;

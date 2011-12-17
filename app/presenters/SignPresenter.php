@@ -1,65 +1,46 @@
 <?php
 
-use Nette\Application\UI,
-	Nette\Security as NS;
+use Nette\Application\UI\Form,
+	Nette\Security;
 
 
 /**
- * Sign in/out presenters.
- *
- * @author     John Doe
- * @package    MyApplication
+ * Presenter, který se stará o přihlašování uživatelů.
  */
 class SignPresenter extends BasePresenter
 {
 
-
-	/**
-	 * Sign in form component factory.
-	 * @return Nette\Application\UI\Form
-	 */
 	protected function createComponentSignInForm()
 	{
-		$form = new UI\Form;
-		$form->addText('username', 'Username:')
-			->setRequired('Please provide a username.');
-
-		$form->addPassword('password', 'Password:')
-			->setRequired('Please provide a password.');
-
-		$form->addCheckbox('remember', 'Remember me on this computer');
-
-		$form->addSubmit('send', 'Sign in');
-
+		$form = new Form();
+		$form->addText('username', 'Uživatelské jméno:', 30, 20);
+		$form->addPassword('password', 'Heslo:', 30);
+		$form->addCheckbox('persistent', 'Pamatovat si mě na tomto počítači');
+		$form->addSubmit('login', 'Přihlásit se');
 		$form->onSuccess[] = callback($this, 'signInFormSubmitted');
 		return $form;
 	}
 
-
-
-	public function signInFormSubmitted($form)
+	public function signInFormSubmitted(Form $form)
 	{
 		try {
+			$user = $this->getUser();
 			$values = $form->getValues();
-			if ($values->remember) {
-				$this->getUser()->setExpiration('+ 14 days', FALSE);
-			} else {
-				$this->getUser()->setExpiration('+ 20 minutes', TRUE);
+			if ($values->persistent) {
+				$user->setExpiration('+30 days', FALSE);
 			}
-			$this->getUser()->login($values->username, $values->password);
+			$user->login($values->username, $values->password);
+			$this->flashMessage('Přihlášení bylo úspěšné.', 'success');
 			$this->redirect('Homepage:');
-
-		} catch (NS\AuthenticationException $e) {
-			$form->addError($e->getMessage());
+		} catch (Security\AuthenticationException $e) {
+			$form->addError('Neplatné uživatelské jméno nebo heslo.');
 		}
 	}
-
 
 
 	public function actionOut()
 	{
 		$this->getUser()->logout();
-		$this->flashMessage('You have been signed out.');
 		$this->redirect('in');
 	}
 

@@ -3,7 +3,7 @@
 /**
  * Presenter pro úvodní stránku. Obsahuje seznam úkolů, které jsou uživateli přiřazeny.
  */
-class HomepagePresenter extends BasePresenter
+class HomepagePresenter extends SecuredPresenter
 {
 
 	public function createComponentIncompleteTasks()

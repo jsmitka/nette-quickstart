@@ -32,11 +32,20 @@
 	<div id="header">
 		<div id="header-inner">
 			<div class="title"><a n:href="Homepage:">Úkolníček</a></div>
+
+			{if $user->isLoggedIn()}
+			<div class="user">
+				<span class="icon user">{$user->getIdentity()->name}</span> |
+				<a n:href="Sign:out">Odhlásit se</a>
+			</div>
+			{/if}
 		</div>
 	</div>
 
 	<div id="container">
 		<div id="sidebar">
+			{if $user->isLoggedIn()}
+			<div class="title">Seznamy úkolů</div>
 			<div class="task-lists">
 				<ul>
 					<li n:foreach="$taskLists as $list"><a n:href="Task: $list->id">{$list->title}</a></li>
@@ -52,6 +61,7 @@
 				</div>
 				{/form}
 			</fieldset>
+			{/if}
 		</div>
 
 		<div id="content">
