@@ -2,7 +2,7 @@ Formuláře
 #########
 
 .[perex]
-V této kapitole se seznámíme s formuláří a některými nástrahami, které k nim patří. Vytvoříme si jednoduchý formulář
+V této kapitole se seznámíme s formuláři a některými nástrahami, které k nim patří. Vytvoříme si jednoduchý formulář
 pro zakládání nových úkolů a další pro vytváření nových seznamů.
 
 
@@ -10,7 +10,7 @@ pro zakládání nových úkolů a další pro vytváření nových seznamů.
 
 
 Formuláře z Nette lze používat samostatně, nezávisle na zbytku frameworku. Pokud se je ale rozhodneme používat v rámci
-Nette aplikaci ve spojení s presentery a plným kompomentovým modelem, bude jejich používání ještě o něco jednodušší
+Nette aplikaci ve spojení s presentery a plným komponentovým modelem, bude jejich používání ještě o něco jednodušší
 a hlavně radostnější.
 
 Základní třídy sídlí ve jmenném prostoru `Nette\Forms`. Je zde jak základní třída formuláře, tak veškeré formulářové
@@ -45,7 +45,7 @@ protected function createComponentTaskForm()
 Tovární metody na komponenty jsou volány samotným presenterem, proto mohou být `protected`.
 
 Funkce `createComponentTaskForm()` je speciální tovární funkcí na komponenty. Kdykoliv presenter požádáme o instanci
-komponenty s názvem `taskForm`, tak se nejprve podívá, zda již takovovou komponentnu nemá vytvořenou. Pokud ne, tak si
+komponenty s názvem `taskForm`, tak se nejprve podívá, zda již takovou komponentu nemá vytvořenou. Pokud ne, tak si
 zavolá právě tuto funkci. Funkce buď jen komponentnu vytvoří a vrátí ji jako svou návratovou hodnotu, nebo jí rovnou
 připojí k presenteru a pak je návratová hodnota ignorována (a `return` nemusí být vůbec uveden). Připojení k presenteru
 se nejjednodušeji provede uvedením rodiče (v presenteru `$this`) a názvu komponenty v konstruktoru:
@@ -123,7 +123,7 @@ Nyní máme tento jednoduchý formulář téměř kompletní. Zbývá nám jej j
 </fieldset>
 \---
 
-Povšimněte si nového makra `{control}`. To zajistí vykreslení komponenty se zadaným názevem. V našem přípdě presenter
+Povšimněte si nového makra `{control}`. To zajistí vykreslení komponenty se zadaným názvem. V našem případě presenter
 nejprve zjistí, zda již existuje komponenta s názvem `taskForm`. Pokud neexistuje, zavolá si metodu `createComponentTaskForm`
 a komponentu si vytvoří. Pak zajistí vykreslení pomocí metody `render()`, kterou má formulář definovanou. Blíže si ji
 představíme v další kapitole.
@@ -175,4 +175,34 @@ přesměrování je velmi důležité. Pokud bychom ho neprovedli, uživateli by
 prohlížeče. Pokud by se pak na tuto stránku vrátil, formulář by se odeslal znovu a tím pádem by se záznam v databázi
 vytvořil ještě jednou. Podobně by se pak chovalo obnovení stránky.
 
+Nyní již vytváření úkolů bude plně funkční. Vzhled formuláře však není ideální. Nette vykresluje formuláře do tabulek,
+takže se nám do formuláře trochu vmíchal styl seznamu úkolů. Pojďme si to tedy napravit.
+
+
+Vlastní vykreslení formuláře
+============================
+
+Pokud chceme jednotlivé prvky formuláře vykreslit ručně, můžeme tak učinit pomocí latte maker `{form}`, `{input}` a
+párového `{label /}`. Jejich názvy mluví za vše, proto si je ukážeme v praxi:
+
+/---html
+{form taskForm}
+<div class="taskForm">
+	{label text /} {input text size => 30, autofocus => true} {label userId /} {input userId} {input create}
+</div>
+{/form}
+\---
+
+Počáteční `{form taskForm}` říká, že budeme vykreslovat formulář s názvem `taskForm`. Uvnitř je jeden vnořený `<div>`
+a v něm na jedné řádce všechny prvky formuláře. První `{label text /}` vykreslí popisku pro prvek `text`. Jak již bylo
+řečeno, makro `{label /}` je párové. Buď můžeme do jeho obsahu napsat popisku přímo v šabloně (`{label}Text:{/label}`),
+nebo makro ukončit podobně jako HTML tag. V takovém případě se použije popiska zadaná při definici formuláře.
+
+Makro `{input text}` vykreslí samotný formulářový prvek. Volitelně mu lze přidat seznam atributů, které chceme
+HTML elementu přiřadit. Zde nastavujeme `size` na 30 a povolujeme `autofocus`, který je podporován jen v novějších
+prohlížečích.
+
+Výsledný formulář bude nyní vypadat takto:
+
+[* 05_taskForm-manual.png *]
 
