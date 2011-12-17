@@ -270,7 +270,7 @@ Získaný záznam spolu se seznamem úkolů předáme šabloně v metodě `rende
 public function renderDefault($id)
 {
 	$this->template->taskList = $this->taskList;
-	$this->template->tasks = $this->taskList->related('task')->order('id');
+	$this->template->tasks = $this->taskList->related('task')->order('created');
 }
 \---
 

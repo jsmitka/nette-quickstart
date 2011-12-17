@@ -29,20 +29,41 @@ class TaskPresenter extends BasePresenter
 	public function renderDefault($id)
 	{
 		$this->template->taskList = $this->taskList;
-		$this->template->tasks = $this->taskList->related('task')->order('id');
+		$this->template->tasks = $this->taskList->related('task')->order('created');
 	}
 
 
-
+	/**
+	 * Vytvoří formulář pro zakládání úkolů.
+	 * @return Nette\Application\UI\Form
+	 */
 	protected function createComponentTaskForm()
 	{
 		$form = new Form();
 		$form->addText('text', 'Úkol:', 40, 100)
 			->addRule(Form::FILLED, 'Je nutné zadat text úkolu.');
-		$form->addSelect('user_id', 'Pro:', $this->model->getUsers()->fetchPairs('id', 'name'))
+		$form->addSelect('userId', 'Pro:', $this->model->getUsers()->fetchPairs('id', 'name'))
 			->setPrompt('- Vyberte -')
 			->addRule(Form::FILLED, 'Je nutné vybrat, komu je úkol přiřazen.');
 		$form->addSubmit('create', 'Vytvořit');
+		$form->onSuccess[] = callback($this, 'taskFormSubmitted');
 		return $form;
+	}
+
+
+	/**
+	 * Zpracování odeslaného formuláře taskForm.
+	 * @param Nette\Application\UI\Form $form
+	 */
+	public function taskFormSubmitted(Form $form)
+	{
+		$this->model->getTasks()->insert(array(
+			'text' => $form->values->text,
+			'user_id' => $form->values->userId,
+			'created' => new DateTime(),
+			'tasklist_id' => $this->taskList->id
+		));
+		$this->flashMessage('Úkol přidán.', 'success');
+		$this->redirect('this');
 	}
 }
