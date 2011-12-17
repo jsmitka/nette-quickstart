@@ -1,6 +1,8 @@
 
 @baseColor: #0499da;
 @altColor: #0065cd;
+@width: 820px;
+
 @import "mixins.less";
 
 
@@ -17,7 +19,7 @@ body {
 }
 
 #header-inner {
-	width: 840px;
+	width: @width;
 	margin: 0 auto;
 }
 
@@ -39,7 +41,7 @@ body {
 
 #container {
 	overflow: hidden;
-	width: 840px;
+	width: @width;
 	margin:0 auto;
 }
 
@@ -89,6 +91,10 @@ div.task-lists {
 
     	&:hover { color: #333; border-bottom-color: #555; }
     }
+}
+
+.taskForm input[type=submit] {
+	float: right;
 }
 
 
@@ -142,6 +148,36 @@ tr.even {
 
 tr.odd {
 	background-color: #F2F2F2;
+}
+
+
+/*** Formuláře ***/
+
+fieldset {
+	border: 1px solid #bbb;
+	margin-bottom: 1.5em;
+}
+
+label {
+	font-weight: bold;
+}
+
+form {
+	div.pair {
+		clear: both;
+
+		label {
+			width: 130px;
+			text-align: right;
+			float: left;
+			line-height: 2;
+			vertical-align: middle;
+		}
+
+		div.input {
+			margin-left: 150px;
+		}
+	}
 }
 
 

@@ -17,7 +17,7 @@ body {
   height: 40px;
 }
 #header-inner {
-  width: 840px;
+  width: 820px;
   margin: 0 auto;
 }
 #header div.title {
@@ -35,7 +35,7 @@ body {
 }
 #container {
   overflow: hidden;
-  width: 840px;
+  width: 820px;
   margin: 0 auto;
 }
 #sidebar {
@@ -77,6 +77,9 @@ div.task-lists a:hover {
   color: #333;
   border-bottom-color: #555;
 }
+.taskForm input[type=submit] {
+  float: right;
+}
 /*** Titulky ***/
 h1 {
   color: #404040;
@@ -111,6 +114,27 @@ tr.even {
 }
 tr.odd {
   background-color: #F2F2F2;
+}
+/*** Formuláře ***/
+fieldset {
+  border: 1px solid #bbb;
+  margin-bottom: 1.5em;
+}
+label {
+  font-weight: bold;
+}
+form div.pair {
+  clear: both;
+}
+form div.pair label {
+  width: 130px;
+  text-align: right;
+  float: left;
+  line-height: 2;
+  vertical-align: middle;
+}
+form div.pair div.input {
+  margin-left: 150px;
 }
 /*** Flash zprávičky ***/
 div.flash {
