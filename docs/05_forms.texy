@@ -255,3 +255,10 @@ V šabloně `@layout.latte`:
 	</fieldset>
 </div>
 \---
+
+
+Závěr
+*****
+
+V této kapitole jsme vytvořili formuláře jak pro vkládání úkolů, tak pro zakládání nových seznamů. V další kapitole
+si napíšeme vlastní komponentu.

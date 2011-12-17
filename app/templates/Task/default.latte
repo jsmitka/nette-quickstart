@@ -13,23 +13,6 @@
 	{/form}
 </fieldset>
 
-<table>
-	<thead>
-	<tr>
-		<th>Čas vytvoření</th>
-		<th>Úkol</th>
-		<th>Přiřazeno</th>
-	</tr>
-	</thead>
-	<tbody>
-	{foreach $tasks as $task}
-	<tr>
-		<td>{$task->created|date:'j. n. Y'}</td>
-		<td>{$task->text}</td>
-		<td>{$task->user->name}</td>
-	</tr>
-	{/foreach}
-	</tbody>
-</table>
+{control taskList}
 
 {/block}

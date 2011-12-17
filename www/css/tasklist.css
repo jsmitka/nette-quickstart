@@ -13,7 +13,6 @@ body {
   background-image: -o-linear-gradient(top, #0376a8, #004c9a);
   background-image: -ms-linear-gradient(top, #0376a8, #004c9a);
   background-image: linear-gradient(top, #0376a8, #004c9a);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0376a8', endColorstr='#004c9a', GradientType=0);
   height: 40px;
 }
 #header-inner {

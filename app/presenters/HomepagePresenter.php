@@ -6,13 +6,10 @@
 class HomepagePresenter extends BasePresenter
 {
 
-	/**
-	 * Výchozí view. Zobrazí všechny nesplněné úkoly.
-	 */
-	public function renderDefault()
+	public function createComponentIncompleteTasks()
 	{
-		$this->template->tasks = $this->model->getTasks()
-			->where(array('done' => false))->order('created ASC');
+		return new TaskList($this->model->getTasks()
+			->where(array('done' => false))->order('created ASC'));
 	}
 
 }

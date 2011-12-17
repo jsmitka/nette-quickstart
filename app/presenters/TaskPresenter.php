@@ -29,7 +29,12 @@ class TaskPresenter extends BasePresenter
 	public function renderDefault($id)
 	{
 		$this->template->taskList = $this->taskList;
-		$this->template->tasks = $this->taskList->related('task')->order('created');
+	}
+
+
+	protected function createComponentTaskList()
+	{
+		return new TaskList($this->taskList->related('task')->order('created'));
 	}
 
 

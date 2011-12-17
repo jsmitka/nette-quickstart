@@ -8,5 +8,16 @@
 	background-image: -o-linear-gradient(top, @startColor, @endColor);
 	background-image: -ms-linear-gradient(top, @startColor, @endColor);
 	background-image: linear-gradient(top, @startColor, @endColor);
-	filter: e(%("progid:DXImageTransform.Microsoft.gradient(startColorstr='%d', endColorstr='%d', GradientType=0)",@startColor,@endColor));
+}
+
+.border-radius(@radius: 5px) {
+	-webkit-border-radius: @radius;
+	-moz-border-radius: @radius;
+	border-radius: @radius;
+}
+
+.box-shadow(@shadow) {
+	-webkit-box-shadow: @shadow;
+	-moz-box-shadow: @shadow;
+	box-shadow: @shadow;
 }
