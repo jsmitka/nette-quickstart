@@ -425,12 +425,17 @@ public function actionDefault($id)
 Pro tento view poté musíme vytvořit šablonu `notFound.latte` ve složce `app/templates/Task`:
 
 /---php
+{status 404}
+
 {block content}
 
 <h1>Seznam úkolů nenalezen</h1>
 
 <p>Litujeme, ale Vámi požadovaný seznam úkolů nebyl nalezen.</p>
 \---
+
+Makrem `{status 404}` nastavujeme HTTP status na 404: Nenalezeno. Povšimněte si, že v šabloně chybí ukončovací makero
+pro `{block content}` - u posledního bloku v šabloně můžeme uzavírací část vynechat.
 
 Pokud zkusíme opět přistoupit na neexistující ID, bude situace o poznání lepší:
 
@@ -439,6 +444,44 @@ Pokud zkusíme opět přistoupit na neexistující ID, bude situace o poznání 
 Povšimněte si, že jsme nikde nevytvářeli metodu `renderNotFound()`. View může existovat i bez ní. Stačí jen vytvořit
 šablonu se správným názvem a je hotovo.
 
+
+Titulek stránek
+***************
+
+Nyní se sice můžeme pohodlně přesouvat mezi jednotlivými výpisy, ale pokud se podíváme do historie nebo do názvu okna
+prohlížeče, zjistíme, že titulek stránky se vůbec nemění.
+
+Díky dědičnosti šablon však bude doplnění titulku záležitostí chvilky. Šablona view se vykonává vždy před šablonou
+layoutu, teprve po ní se vykresluje layout a vkládají se do něj bloky z šablony. Před blokem `{content}` v šabloně view
+tedy můžeme nastavit libovolnou proměnnou a tu použít v layoutu.
+
+Nejprve tedy v `@layout.latte` upravíme obsah elementu `<title>`:
+
+/---html
+<title>{ifset $title}{$title} &ndash; {/ifset}Úkolníček</title>
+\---
+
+Makrem `{ifset}` ověříme existenci proměnné `$title`. Pokud tato proměnná bude existovat, použijeme ji. Její nastavení
+provedeme v šablonách jednotlivých view. Na začátek souborů umístíme:
+
+`Homepage/default.latte`:
+
+/---html
+{var $title = 'Přehled úkolů'}
+\---
+
+`Task/default.latte`:
+
+/---html
+{var $title = $taskList->title}
+\---
+
+`Task/notFound.latte`:
+/---html
+{var $title 'Nenalezeno'}
+\---
+
+A to je vše. Nyní už se titulek stránky bude při procházení webem měnit.
 
 
 Ostylování

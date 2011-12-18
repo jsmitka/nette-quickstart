@@ -1,3 +1,4 @@
+{var $title = $taskList->title}
 
 {block content}
 
@@ -8,6 +9,8 @@
 
 	{form taskForm}
 	<div class="task-form">
+		{control $form errors}
+
 		{label text /} {input text size => 30, autofocus => true} {label userId /} {input userId} {input create}
 	</div>
 	{/form}

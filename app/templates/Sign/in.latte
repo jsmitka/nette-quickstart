@@ -1,8 +1,12 @@
+{var $title = 'Přihlášení'}
+
 {block #content}
 
 <h1>Přihlášení</h1>
 
 {form signInForm}
+{control $form errors}
+
 <div class="sign-in-form">
 	<div class="pair">
 		{label username /}

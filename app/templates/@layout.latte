@@ -17,7 +17,7 @@
 	<meta name="description" content="Nette Framework web application skeleton">
 	<meta name="robots" content="{$robots}" n:ifset="$robots">
 
-	<title>Nette Application Skeleton</title>
+	<title>{ifset $title}{$title} &ndash; {/ifset}Úkolníček</title>
 
 	<link rel="stylesheet" href="{$basePath}/css/tasklist.css" type="text/css">
 	<link rel="shortcut icon" href="{$basePath}/favicon.ico" type="image/x-icon">
@@ -56,6 +56,8 @@
 				<legend>Nový seznam</legend>
 				{form newTasklistForm}
 				<div class="new-tasklist-form">
+					{control $form errors}
+
 					{input title}
 					{input create}
 				</div>

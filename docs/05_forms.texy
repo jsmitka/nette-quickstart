@@ -188,15 +188,24 @@ párového `{label /}`. Jejich názvy mluví za vše, proto si je ukážeme v pr
 /---html
 {form taskForm}
 <div class="task-form">
+	{control $form errors}
+
 	{label text /} {input text size => 30, autofocus => true} {label userId /} {input userId} {input create}
 </div>
 {/form}
 \---
 
 Počáteční `{form taskForm}` říká, že budeme vykreslovat formulář s názvem `taskForm`. Uvnitř je jeden vnořený `<div>`
-a v něm na jedné řádce všechny prvky formuláře. První `{label text /}` vykreslí popisku pro prvek `text`. Jak již bylo
-řečeno, makro `{label /}` je párové. Buď můžeme do jeho obsahu napsat popisku přímo v šabloně (`{label}Text:{/label}`),
-nebo makro ukončit podobně jako HTML tag. V takovém případě se použije popiska zadaná při definici formuláře.
+a v něm na jedné řádce všechny prvky formuláře.
+
+Ještě před nimi je však nutné zajistit případné vykreslení chyb ve vyplněném formuláři. To zajistíme makrem
+`{control $form errors}`. Před odesláním se sice provádí kontrola JavaScriptem u klienta, pokud jej ale bude mít uživatel
+vypnutý, formulář se odešle a je nutné mu chyby zobrazit takto. Některé chyby navíc není možné u klienta ověřit,
+proto na výpis chyb nesmíme zapomenout.
+
+Pak hned následují jednotlivé prvky. První `{label text /}` vykreslí popisku pro prvek `text`. Jak již bylo řečeno,
+makro `{label /}` je párové. Buď můžeme do jeho obsahu napsat popisku přímo v šabloně (`{label}Text:{/label}`), nebo
+makro ukončit podobně jako HTML tag. V takovém případě se použije popiska zadaná při definici formuláře.
 
 Makro `{input text}` vykreslí samotný formulářový prvek. Volitelně mu lze přidat seznam atributů, které chceme
 HTML elementu přiřadit. Zde nastavujeme `size` na 30 a povolujeme `autofocus`, který je podporován jen v novějších
@@ -249,8 +258,12 @@ V šabloně `@layout.latte`:
 	<fieldset>
 		<legend>Nový seznam</legend>
 		{form newTasklistForm}
-		<div class="new"
-		{input title}
+		<div class="new-tasklist-form">
+			{control $form errors}
+
+			{input title}
+			{input create}
+		</div>
 		{/form}
 	</fieldset>
 </div>
