@@ -170,6 +170,19 @@ form div.pair div.input label {
   float: none;
   line-height: normal;
 }
+form ul.error {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+form ul.error li {
+  display: block;
+  padding: .8em;
+  margin-bottom: 1em;
+  border: 2px solid #FBC2C4;
+  background: #FBE3E4;
+  color: #8a1f11;
+}
 input[type=checkbox] {
   vertical-align: middle;
 }
