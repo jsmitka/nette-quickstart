@@ -61,6 +61,10 @@ class TaskList extends UI\Control
 	public function handleMarkDone($taskId)
 	{
 		$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
-		$this->presenter->redirect('this');
+		if (!$this->presenter->isAjax()) {
+			$this->presenter->redirect('this');
+		} else {
+			$this->invalidateControl();
+		}
 	}
 }

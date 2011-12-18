@@ -4,10 +4,11 @@
 
 <h1>{$taskList->title}</h1>
 
+{snippet form}
 <fieldset>
 	<legend>Přidat úkol</legend>
 
-	{form taskForm}
+	{form taskForm class => ajax}
 	<div class="task-form">
 		{control $form errors}
 
@@ -15,6 +16,7 @@
 	</div>
 	{/form}
 </fieldset>
+{/snippet}
 
 {control taskList}
 

@@ -1,3 +1,4 @@
+{snippet}
 <table class="tasks">
 	<thead>
 	<tr>
@@ -13,8 +14,9 @@
 		<td>{$task->created|date:'j. n. Y'}</td>
 		<td>{$task->text}</td>
 		<td>{$task->user->name}</td>
-		<td><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick">hotovo</a></td>
+		<td><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick ajax">hotovo</a></td>
 	</tr>
 	{/foreach}
 	</tbody>
 </table>
+{/snippet}

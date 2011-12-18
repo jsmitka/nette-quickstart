@@ -24,6 +24,7 @@
 
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
 	<script type="text/javascript" src="{$basePath}/js/netteForms.js"></script>
+	<script type="text/javascript" src="{$basePath}/js/ajax.js"></script>
 	{block head}{/block}
 </head>
 
@@ -68,7 +69,9 @@
 		</div>
 
 		<div id="content">
+			{snippet flashMessages}
 			<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+			{/snippet}
 
 			{include #content}
 		</div>

@@ -71,6 +71,12 @@ class TaskPresenter extends SecuredPresenter
 			'tasklist_id' => $this->taskList->id
 		));
 		$this->flashMessage('Úkol přidán.', 'success');
-		$this->redirect('this');
+		if (!$this->isAjax()) {
+			$this->redirect('this');
+		} else {
+			$form->setValues(array(), TRUE);
+			$this->invalidateControl('form');
+			$this['taskList']->invalidateControl();
+		}
 	}
 }
