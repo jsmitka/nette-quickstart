@@ -2,19 +2,21 @@
 <table class="tasks">
 	<thead>
 	<tr>
-		<th>&nbsp;</th>
-		<th>Úkol</th>
-		<th>Přiřazeno</th>
-		<th>&nbsp;</th>
+		<th class="created">&nbsp;</th>
+		<th class="tasklist" n:if="$displayTaskList">Seznam</th>
+		<th class="text">Úkol</th>
+		<th class="user" n:if="$displayUser">Přiřazeno</th>
+		<th class="action">&nbsp;</th>
 	</tr>
 	</thead>
 	<tbody>
 	{foreach $tasks as $task}
 	<tr n:class="$iterator->isOdd() ? odd : even, $task->done ? done">
-		<td>{$task->created|date:'j. n. Y'}</td>
-		<td>{$task->text}</td>
-		<td>{$task->user->name}</td>
-		<td><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick ajax">hotovo</a></td>
+		<td class="created">{$task->created|date:'j. n. Y'}</td>
+		<td class="tasklist" n:if="$displayTaskList">{$task->tasklist->title}</td>
+		<td class="text">{$task->text}</td>
+		<td class="user" n:if="$displayUser">{$task->user->name}</td>
+		<td class="action"><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick ajax">hotovo</a></td>
 	</tr>
 	{/foreach}
 	</tbody>

@@ -14,6 +14,12 @@ class TaskList extends UI\Control
 	/** @var Model */
 	private $model;
 
+	/** @var bool */
+	private $displayUser = TRUE;
+
+	/** @var bool */
+	private $displayTaskList = FALSE;
+
 	/**
 	 * @param Nette\Database\Table\Selection $selection Model, jehož výpis se bude provádět.
 	 * @param Nette\ComponentModel\IContainer|null $parent Rodičovská komponenta.
@@ -50,6 +56,8 @@ class TaskList extends UI\Control
 	{
 		$this->template->setFile(__DIR__ . '/TaskList.latte');
 		$this->template->tasks = $this->selection;
+		$this->template->displayUser = $this->displayUser;
+		$this->template->displayTaskList = $this->displayTaskList;
 		$this->template->render();
 	}
 
@@ -66,5 +74,37 @@ class TaskList extends UI\Control
 		} else {
 			$this->invalidateControl();
 		}
+	}
+
+	/**
+	 * @param boolean $displayTaskList
+	 */
+	public function setDisplayTaskList($displayTaskList)
+	{
+		$this->displayTaskList = $displayTaskList;
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function getDisplayTaskList()
+	{
+		return $this->displayTaskList;
+	}
+
+	/**
+	 * @param boolean $displayUser
+	 */
+	public function setDisplayUser($displayUser)
+	{
+		$this->displayUser = $displayUser;
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function getDisplayUser()
+	{
+		return $this->displayUser;
 	}
 }

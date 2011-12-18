@@ -11,6 +11,7 @@ class HomepagePresenter extends SecuredPresenter
 		$taskList = new TaskList($this->model->getTasks()
 			->where(array('done' => false))->order('created ASC'));
 		$taskList->setModel($this->model);
+		$taskList->setDisplayTaskList(TRUE);
 		return $taskList;
 	}
 
@@ -21,6 +22,8 @@ class HomepagePresenter extends SecuredPresenter
 			'done' => false, 'user_id' => $this->getUser()->getId()
 		)));
 		$taskList->setModel($this->model);
+		$taskList->setDisplayTaskList(TRUE);
+		$taskList->setDisplayUser(FALSE);
 		return $taskList;
 	}
 

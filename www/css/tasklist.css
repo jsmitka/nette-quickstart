@@ -136,6 +136,20 @@ table.tasks tr.done {
   color: #888;
   text-decoration: line-through;
 }
+table.tasks .created {
+  font-size: smaller;
+  width: 70px;
+  text-align: right;
+}
+table.tasks .tasklist {
+  width: 65px;
+}
+table.tasks .user {
+  font-size: smaller;
+}
+table.tasks .action {
+  width: 75px;
+}
 /*** Formuláře ***/
 fieldset {
   border: 1px solid #bbb;

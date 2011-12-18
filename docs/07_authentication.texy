@@ -276,9 +276,14 @@ public function createComponentUserTasks()
 		'done' => false, 'user_id' => $this->getUser()->getId()
 	)));
 	$taskList->setModel($this->model);
+	$taskList->setDisplayTaskList(TRUE);
+    $taskList->setDisplayUser(FALSE);
 	return $taskList;
 }
 \---
+
+U tohoto výpisu nebudeme chtít zobrazit uživatele, kterému je úkol přiřazen, ale místo toho naopak seznam úkolů,
+ve kterém je úkol veden.
 
 Šablona `Homepage/default.latte`:
 
