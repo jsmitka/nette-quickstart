@@ -214,7 +214,7 @@ public function createComponentIncompleteTasks()
 }
 \---
 
-Komponenta nyní má k dispozici model a může jej využívat. Přidáme do ní tedy signál `markDone`. To prvedeme vytvořením
+Komponenta nyní má k dispozici model a může jej využívat. Přidáme do ní tedy signál `markDone`. To provedeme vytvořením
 metody `handleMarkDone()`, která jako jediný parametr bude mít ID úkolu, který chceme označit jako splněný:
 
 /---php
