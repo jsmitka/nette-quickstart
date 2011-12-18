@@ -12,7 +12,7 @@ class TaskPresenter extends SecuredPresenter
 
 	/**
 	 * Výchozí akce presenteru. Zajistí výběr informací o seznamu úkolů z databáze.
-	 * @param $id ID seznamu úkolů.
+	 * @param $id int ID seznamu úkolů.
 	 */
 	public function actionDefault($id)
 	{
@@ -24,7 +24,7 @@ class TaskPresenter extends SecuredPresenter
 
 	/**
 	 * Výchozí view presenteru. Zajistí zobrazení zadaného seznamu úkolů.
-	 * @param $id ID seznamu úkolů.
+	 * @param $id int ID seznamu úkolů.
 	 */
 	public function renderDefault($id)
 	{

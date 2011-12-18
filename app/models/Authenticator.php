@@ -25,7 +25,7 @@ class Authenticator extends Nette\Object implements NS\IAuthenticator
 
 	/**
 	 * Provede ověření zadaných přístupových údajů.
-	 * @param  array Pole obsahující klíče IAuthenticator::USERNAME a IAuthenticator::PASSWORD.
+	 * @param  $credentials array Pole obsahující klíče IAuthenticator::USERNAME a IAuthenticator::PASSWORD.
 	 * @return Nette\Security\Identity Identita uživatele.
 	 * @throws Nette\Security\AuthenticationException V případě, že zadané údaje nejsou platné.
 	 */
@@ -50,12 +50,24 @@ class Authenticator extends Nette\Object implements NS\IAuthenticator
 
 	/**
 	 * Vypočítá osolený hash hesla.
-	 * @param  string Heslo v plaintextu.
+	 * @param  $password string Heslo v plaintextu.
 	 * @return string Vypočítaný hash.
 	 */
 	public function calculateHash($password)
 	{
 		return hash('sha512', $password);
+	}
+
+
+	/**
+	 * Změní heslo uživatele.
+	 * @param $user_id string ID uživatele.
+	 * @param $password string Nové heslo.
+	 */
+	public function setPassword($id, $password)
+	{
+		$this->users->where(array('id' => $id))
+			->update(array('password' => $this->calculateHash($password)));
 	}
 
 }

@@ -36,6 +36,7 @@
 			{if $user->isLoggedIn()}
 			<div class="user">
 				<span class="icon user">{$user->getIdentity()->name}</span> |
+				<a n:href="User:password">Změna hesla</a> |
 				<a n:href="Sign:out">Odhlásit se</a>
 			</div>
 			{/if}

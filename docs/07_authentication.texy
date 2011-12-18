@@ -117,6 +117,8 @@ Formulář ještě musíme v šabloně vykreslit. Šablonu `Sign/in.latte` uprav
 
 {form signInForm}
 <div class="sign-in-form">
+    {control $form errors}
+
 	<div class="pair">
 		{label username /}
 		<div class="input">{input username}</div>
@@ -293,6 +295,73 @@ public function createComponentUserTasks()
 
 {/block}
 \---
+
+
+Formulář pro změnu hesla
+************************
+
+Změna hesla uživatele je také velmi jednoduchá. Pro začátek si do `Authenticator`u přidáme pomocnou metodu pro nastavení
+hesla uživatele:
+
+/---php
+public function setPassword($id, $password)
+{
+	$this->users->where(array('id' => $id))
+		->update(array('password' => $this->calculateHash($password)));
+}
+\---
+
+Nyní už stačí jen vytvořit formulář, který změnu hesla provede. Umístíme jej do vlastního presenteru, který pojmenujeme
+například `UserPresenter`:
+
+/---php
+use Nette\Application\UI\Form,
+	Nette\Security;
+
+
+class UserPresenter extends SecuredPresenter
+{
+	protected function createComponentPasswordForm()
+	{
+		$form = new Form();
+		$form->addPassword('oldPassword', 'Staré heslo:', 30)
+			->addRule(Form::FILLED, 'Je nutné zadat staré heslo.');
+		$form->addPassword('newPassword', 'Nové heslo:', 30)
+			->addRule(Form::MIN_LENGTH, 'Nové heslo musí mít alespoň %d znaků.', 6);
+		$form->addPassword('confirmPassword', 'Potvrzení hesla:', 30)
+			->addRule(Form::FILLED, 'Nové heslo je nutné zadat ještě jednou pro potvrzení.')
+			->addRule(Form::EQUAL, 'Zadná hesla se musejí shodovat.', $form['newPassword']);
+		$form->addSubmit('set', 'Změnit heslo');
+		$form->onSuccess[] = callback($this, 'passwordFormSubmitted');
+		return $form;
+	}
+
+
+	public function passwordFormSubmitted(Form $form)
+	{
+		$values = $form->getValues();
+		$authenticator = $this->getService('authenticator');
+		$user = $this->getUser();
+		try {
+			$authenticator->authenticate(array($user->getIdentity()->username, $values->oldPassword));
+			$authenticator->setPassword($user->getId(), $values->newPassword);
+			$this->flashMessage('Heslo bylo změněno.', 'success');
+			$this->redirect('Homepage:');
+		} catch (Security\AuthenticationException $e) {
+			$form->addError('Zadané heslo není správné.');
+		}
+	}
+}
+\---
+
+Povšimněte si něktrých nových validačních pravidel. `Form::MIN_LENGTH` ověřuje délku hesla. V popisce je použito zástupné
+`%d`. To je nahrazeno parametrem validačního pravidla, tedy číslem 6, protože popisky jsou před použitím zpracovány funkcí
+"sprintf":[http://php.net/manual/en/function.sprintf.php]. Pravidlo `EQUAL` kontroluje, zda se hodnota políčka rovná
+zadané hodnotě. Jako hodnotu můžeme zadat buď statickou hodnotu, nebo odkaz na jiné políčko formuláře, v našem
+případě `$form['newPassword']`.
+
+Ve zpracování už asi není nic, co by nás mohlo zaskočit. Při zpracování jen ověříme, zda je zadané heslo platné a
+poté jej změníme.
 
 
 Závěr
