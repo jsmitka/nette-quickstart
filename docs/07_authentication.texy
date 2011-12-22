@@ -152,6 +152,15 @@ public function actionOut()
 Uživatele jen odhlásíme metodou `logout()` a přesměrujeme jej na přihlášení. Protože akce končí vždy přesměrováním,
 není nutné pro ní vytvářet šablonu - stejně by se nikdy nevykreslila.
 
+Aby fungovalo trvalé přihlášení, je nutné zastavit v `bootstrap.php` delší dobu expirace session:
+
+/---php
+if ($container->session->exists()) {
+	$container->session->setExpiration('+30 days');
+	$container->session->start();
+}
+\---
+
 
 Přesměrování nepřihlášeného uživatele
 *************************************

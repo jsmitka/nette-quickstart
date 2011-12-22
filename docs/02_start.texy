@@ -56,9 +56,7 @@ nebude zatím zajímat.
 - Do složky `tests` budeme ukládat unit testy naší aplikace. Protože je to naše první aplikace, nebudeme se psaním testů
 zatím zatěžovat, nicméně je výhodné testy psát. Proto bude psaní testů v prostředí Nette popsáno v jednom z navazujících
 návodů.
-- Složka `www` by měla být jediná složka, která je veřejně přístupná z webu. Právě do ní by měl v produkčním prostředí
-ukazovat `document_root` webového serveru. Budeme do ní ukládat obrázky, JavaScripty, CSS a další data, na která se
-budeme odkazovat z aplikace.
+- Složka `www` by měla být jediná složka, která je veřejně přístupná z webu. Právě do ní by měl v produkčním prostředí ukazovat `document_root` webového serveru. Budeme do ní ukládat obrázky, JavaScripty, CSS a další data, na která se budeme odkazovat z aplikace.
 
 .[note]
 Pokud používáte operační systém GNU/Linux (případně jiný nix-like systém), budete potřebovat nastavit oprávnění pro zápis
@@ -226,6 +224,7 @@ if ($container->session->exists()) {
 	$container->session->start();
 }
 \---
+
 Spustí v případě potřeby session. Jedná se v podstatě o náhradu za volání `session_start()`, akorát je ošetřeno tak,
 aby se session startovala pouze v případě potřeby.
 

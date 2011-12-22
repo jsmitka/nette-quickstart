@@ -6,6 +6,22 @@ use Nette\Application\UI\Form,
 
 class UserPresenter extends SecuredPresenter
 {
+	/** @var Authenticator */
+	private $authenticator;
+
+	/**
+	 * Inicializace.
+	 */
+	public function startup()
+	{
+		parent::startup();
+		$this->authenticator = $this->getService('authenticator');
+	}
+
+	/**
+	 * Továrna na vytvoření formuláře pro změnu hesla.
+	 * @return Nette\Application\UI\Form
+	 */
 	protected function createComponentPasswordForm()
 	{
 		$form = new Form();
@@ -13,6 +29,7 @@ class UserPresenter extends SecuredPresenter
 			->addRule(Form::FILLED, 'Je nutné zadat staré heslo.');
 		$form->addPassword('newPassword', 'Nové heslo:', 30)
 			->addRule(Form::MIN_LENGTH, 'Nové heslo musí mít alespoň %d znaků.', 6);
+		// obě pole se musejí shodovat
 		$form->addPassword('confirmPassword', 'Potvrzení hesla:', 30)
 			->addRule(Form::FILLED, 'Nové heslo je nutné zadat ještě jednou pro potvrzení.')
 			->addRule(Form::EQUAL, 'Zadná hesla se musejí shodovat.', $form['newPassword']);
@@ -22,14 +39,20 @@ class UserPresenter extends SecuredPresenter
 	}
 
 
+	/**
+	 * Zpracuje odeslaný formulář. Mění heslo uživatele.
+	 * @param Nette\Application\UI\Form $form
+	 */
 	public function passwordFormSubmitted(Form $form)
 	{
 		$values = $form->getValues();
-		$authenticator = $this->getService('authenticator');
 		$user = $this->getUser();
 		try {
-			$authenticator->authenticate(array($user->getIdentity()->username, $values->oldPassword));
-			$authenticator->setPassword($user->getId(), $values->newPassword);
+			// ověření správnosti starého hesla
+			$this->authenticator->authenticate(array($user->getIdentity()->username, $values->oldPassword));
+			// změna hesla
+			$this->authenticator->setPassword($user->getId(), $values->newPassword);
+			// flash zprávička a přesměrování
 			$this->flashMessage('Heslo bylo změněno.', 'success');
 			$this->redirect('Homepage:');
 		} catch (Security\AuthenticationException $e) {

@@ -32,6 +32,7 @@ $container = $configurator->loadConfig(__DIR__ . '/config.neon');
 
 // Opens already started session
 if ($container->session->exists()) {
+	$container->session->setExpiration('+30 days');
 	$container->session->start();
 }
 

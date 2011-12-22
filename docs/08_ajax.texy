@@ -1,7 +1,7 @@
 AJAX
 ####
 
-.[prex]
+.[perex]
 Většina moderních aplikací již dnes používá AJAX. Díky Nette je "zajaxování" celé aplikace velmi snadné a téměř nebudete
 muset měnit původní kód. Nyní si ukážeme, jak na to.
 

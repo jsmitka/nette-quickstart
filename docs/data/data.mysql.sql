@@ -3,11 +3,17 @@ INSERT INTO `task` (`id`, `text`, `created`, `done`, `user_id`, `tasklist_id`) V
 (2,	'Implementace úkolníčku',	'2011-12-06 12:35:50',	0,	3,	1),
 (3,	'Sepsání dokumentace',	'2011-12-07 16:23:30',	0,	2,	1),
 (4,	'Opravit chybu #42',	'2011-12-10 16:10:40',	0,	3,	2),
-(5,	'Zavolat klientovi',	'2011-12-10 17:44:32',	0,	2,	2);
+(5,	'Zavolat klientovi',	'2011-12-10 17:44:32',	0,	2,	2),
+(6, 'SWOT analýza',	'2011-12-12 10:42:31',	0,	2,	3),
+(7, 'Analýza trhu',	'2011-12-12 10:53:13',	0,	3,	3),
+(8, 'Opravit chybu #51',	'2011-12-12 14:10:05',	0,	3,	2),
+(9, 'Nastavení serveru',	'2011-12-13 17:52:14',	0,	2,	3),
+(10,	'Benchmark nového stroje', 	'2011-12-15 11:21:52',	1,	2,	3);
 
 INSERT INTO `tasklist` (`id`, `title`) VALUES
 (1,	'Projekt A'),
-(2,	'Projekt B');
+(2,	'Projekt B'),
+(3,	'Projekt C');
 
 INSERT INTO `user` (`id`, `username`, `password`, `name`) VALUES
 (1,	'admin',	'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec',	'Administrátor'),

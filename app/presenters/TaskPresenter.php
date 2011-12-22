@@ -32,6 +32,10 @@ class TaskPresenter extends SecuredPresenter
 	}
 
 
+	/**
+	 * Vytvoří komponentu se seznamem úkolů.
+	 * @return TaskList
+	 */
 	protected function createComponentTaskList()
 	{
 		$taskList = new TaskList($this->taskList->related('task')->order('done, created'));
@@ -51,7 +55,8 @@ class TaskPresenter extends SecuredPresenter
 			->addRule(Form::FILLED, 'Je nutné zadat text úkolu.');
 		$form->addSelect('userId', 'Pro:', $this->model->getUsers()->fetchPairs('id', 'name'))
 			->setPrompt('- Vyberte -')
-			->addRule(Form::FILLED, 'Je nutné vybrat, komu je úkol přiřazen.');
+			->addRule(Form::FILLED, 'Je nutné vybrat, komu je úkol přiřazen.')
+			->setDefaultValue($this->getUser()->getId());
 		$form->addSubmit('create', 'Vytvořit');
 		$form->onSuccess[] = callback($this, 'taskFormSubmitted');
 		return $form;
@@ -64,17 +69,19 @@ class TaskPresenter extends SecuredPresenter
 	 */
 	public function taskFormSubmitted(Form $form)
 	{
+		// vložení nového úkolu
 		$this->model->getTasks()->insert(array(
 			'text' => $form->values->text,
 			'user_id' => $form->values->userId,
 			'created' => new DateTime(),
 			'tasklist_id' => $this->taskList->id
 		));
+		// flash zprávička, přesměrování, invalidace.
 		$this->flashMessage('Úkol přidán.', 'success');
 		if (!$this->isAjax()) {
 			$this->redirect('this');
 		} else {
-			$form->setValues(array(), TRUE);
+			$form->setValues(array('userId' => $this->getUser()->getId()), TRUE);
 			$this->invalidateControl('form');
 			$this['taskList']->invalidateControl();
 		}

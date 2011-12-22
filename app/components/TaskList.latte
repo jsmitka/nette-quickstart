@@ -10,6 +10,7 @@
 	</tr>
 	</thead>
 	<tbody>
+	{if count($tasks) > 0}
 	{foreach $tasks as $task}
 	<tr n:class="$iterator->isOdd() ? odd : even, $task->done ? done">
 		<td class="created">{$task->created|date:'j. n. Y'}</td>
@@ -19,6 +20,11 @@
 		<td class="action"><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick ajax">hotovo</a></td>
 	</tr>
 	{/foreach}
+	{else}
+	<tr class="notice">
+		<td colspan="{= 3 + $displayUser + $displayTaskList}">V seznamu nejsou žádné úkoly.</td>
+	</tr>
+	{/if}
 	</tbody>
 </table>
 {/snippet}

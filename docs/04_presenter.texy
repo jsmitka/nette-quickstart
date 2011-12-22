@@ -16,8 +16,7 @@ této architektury jsou:
 s ním ostatní části aplikace komunikují, a sám o svém okolí nic neví.
 - **View**, nebo také "pohled" - stará se o samotné vykreslení výsledku požadavku uživatele. V Nette tuto část
 představují šablony.
-- **Presenter** - obě předchozí vrstvy spojuje dohromady. Nejprve na základě požadavku od uživatele vyvolá příslušnou
-aplikační logiku (např. zmíněné přidání zboží do košíku či zobrazení dat) a pak požádá view o vykreslení výsledku.
+- **Presenter** - obě předchozí vrstvy spojuje dohromady. Nejprve na základě požadavku od uživatele vyvolá příslušnou aplikační logiku (např. zmíněné přidání zboží do košíku či zobrazení dat) a pak požádá view o vykreslení výsledku.
 
 .[note]
 Architektura MVP je podobná architektuře MVC((Model-View-Controller)). Obě architektury se liší hlavně v úloze jejich
@@ -52,7 +51,7 @@ Má tedy jednu jedinou metodu: `renderDefault()`. Ta se stará o předání dat 
 aplikace se nejprve vykonají požadované akce v presenteru, až pak se podle toho vykresluje šablona. Posloupnost
 těchto kroků zachycuje následující obrázek:
 
-[* 04_media/lifecycle2.gif *]
+[* 04_lifecycle2.png *]
 
 V diagramu si povšimněte metody `action<action>()`. V souvislosti s ní si musíme zavést nový pojem, a to "akce presenteru".
 Nejlepší bude tento pojem vysvětlit na příkladu: akcí presenteru může být například "zobrazení produktu". Interně jí nazveme
@@ -117,7 +116,7 @@ pole ve formátu `sloupec` -> `hodnota`, případně rovnou kus SQL dotazu s par
 rovnosti nestačí, nebo chceme použít složitější podmínky. Podobně voláním `order()` zajistíme setřídění dat vzestupně
 podle sloupce `created`.
 
-.[node]
+.[note]
 Zvídavé čtenáře opět odkazuji do dokumentace na téma "Databáze & ORM":[http://doc.nette.org/cs/database].
 
 Šablona
@@ -156,7 +155,7 @@ nyní uvítací stránka, tu můžeme bez obav smazat a nahradit jí vlastním k
 Ve vypisování šablony nám pomáhají takzvaná makra. Ta jsou uvedena ve složených závorkách a zastávají funkci různých
 jazykových konstrukcí. Šablony můžeme psát i bez nich, ale proč bychom to dělali, že?
 
-.[node]
+.[note]
 Seznam všech maker je samozřejmě v dokumentaci: "Výchozí Latte makra":[http://doc.nette.org/cs/default-macros].
 
 `{block content}` a `{/block}` definuje obsahový blok. Nette takzvanou dědičnost šablon. Hlavní šablona definuje
@@ -282,7 +281,7 @@ Metoda `renderDefault` by měla mít stejné parametry, jako action, i když je 
 K view nám zbývá napsat jen šablonu. Ve složce `templates` vytvoříme podložku `Task` a do ní šablonu `default.latte`.
 Bude velmi podobná té předchozí:
 
-.[node]
+.[note]
 Při vytváření šablon na velikost písmen. Složka s názvem presenteru by měla začínat velkým písmenem, soubor se šablonou
 malým. Při vývoji na Windows to nepoznáme, ale pokud aplikaci přeneseme na linuxový server, způsobí to řadu chyb.
 
@@ -424,7 +423,7 @@ public function actionDefault($id)
 
 Pro tento view poté musíme vytvořit šablonu `notFound.latte` ve složce `app/templates/Task`:
 
-/---php
+/---html
 {status 404}
 
 {block content}
@@ -492,8 +491,8 @@ Stáhneme si tedy soubor "tasklist.css":[tasklist.css], uložíme ho do složky 
 v `@layout.latte`. Předchozí definice stylů odstraníme.
 
 .[note]
-Stylesheet používá některé vlastnosti CSS3. Snahou bylo vmáčknout celý design do jednoho jediného souboru, proto se
-připravte na CSS3 přechody, stylování tlačítek a další pěkné věci. Pokud máte starší prohlížeč, budete jen ochuzeni o některé
+Stylesheet používá některé vlastnosti CSS3. Snahou bylo vmáčknout celý design do jednoho jediného souboru, proto
+využívá některé modernější CSS3 vlastnosti. Pokud máte starší prohlížeč, budete jen ochuzeni o některé
 efekty, aplikace však bude vypadat a fungovat velmi podobně.
 
 /---html

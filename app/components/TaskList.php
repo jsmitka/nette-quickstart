@@ -33,6 +33,7 @@ class TaskList extends UI\Control
 
 
 	/**
+	 * Nastaví model. Je nutný pro aktualizaci úkolů.
 	 * @param \Model $model
 	 */
 	public function setModel($model)
@@ -41,6 +42,7 @@ class TaskList extends UI\Control
 	}
 
 	/**
+	 * Získá model.
 	 * @return \Model
 	 */
 	public function getModel()
@@ -58,6 +60,7 @@ class TaskList extends UI\Control
 		$this->template->tasks = $this->selection;
 		$this->template->displayUser = $this->displayUser;
 		$this->template->displayTaskList = $this->displayTaskList;
+		$this->template->userId = $this->presenter->getUser()->getId();
 		$this->template->render();
 	}
 
@@ -68,15 +71,21 @@ class TaskList extends UI\Control
 	 */
 	public function handleMarkDone($taskId)
 	{
-		$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
-		if (!$this->presenter->isAjax()) {
-			$this->presenter->redirect('this');
-		} else {
-			$this->invalidateControl();
+		$task = $this->model->getTasks()->find($taskId)->fetch();
+		// ověření, zda je tento úkol uživateli skutečně přiřazen
+		if ($task !== NULL && $task->user_id = $this->presenter->getUser()->getId()) {
+			$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
+			// přesměrování nebo invalidace snippetu
+			if (!$this->presenter->isAjax()) {
+				$this->presenter->redirect('this');
+			} else {
+				$this->invalidateControl();
+			}
 		}
 	}
 
 	/**
+	 * Nastaví, zda se má zobrazovat sloupeček se seznamem úkolů.
 	 * @param boolean $displayTaskList
 	 */
 	public function setDisplayTaskList($displayTaskList)
@@ -85,6 +94,7 @@ class TaskList extends UI\Control
 	}
 
 	/**
+	 * Zjistí, zda se zobrazuje sloupeček se seznamem úkolů.
 	 * @return boolean
 	 */
 	public function getDisplayTaskList()
@@ -93,6 +103,7 @@ class TaskList extends UI\Control
 	}
 
 	/**
+	 * Nastaví, zda se má zobrazovat sloupeček s uživatelem, kterému je úkol přiřazen.
 	 * @param boolean $displayUser
 	 */
 	public function setDisplayUser($displayUser)
@@ -101,6 +112,7 @@ class TaskList extends UI\Control
 	}
 
 	/**
+	 * Zjistí, zda se zobrazuje sloupeček s uživatelem.
 	 * @return boolean
 	 */
 	public function getDisplayUser()
