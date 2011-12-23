@@ -62,4 +62,14 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 		$this->flashMessage('Seznam úkolů založen.', 'success');
 		$this->redirect('this');
 	}
+
+	/**
+	 * Signál na odhlášení uživatele
+	 */
+	public function handleSignOut()
+	{
+		$this->getUser()->logout();
+		$this->redirect('Sign:in');
+	}
+
 }
