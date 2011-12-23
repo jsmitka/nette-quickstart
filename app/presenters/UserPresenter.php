@@ -1,7 +1,7 @@
 <?php
 
 use Nette\Application\UI\Form,
-	Nette\Security;
+	Nette\Security as NS;
 
 
 class UserPresenter extends SecuredPresenter
@@ -55,7 +55,7 @@ class UserPresenter extends SecuredPresenter
 			// flash zprávička a přesměrování
 			$this->flashMessage('Heslo bylo změněno.', 'success');
 			$this->redirect('Homepage:');
-		} catch (Security\AuthenticationException $e) {
+		} catch (NS\AuthenticationException $e) {
 			$form->addError('Zadané heslo není správné.');
 		}
 	}

@@ -38,9 +38,8 @@ class TaskPresenter extends SecuredPresenter
 	 */
 	protected function createComponentTaskList()
 	{
-		$taskList = new TaskList($this->taskList->related('task')->order('done, created'));
-		$taskList->setModel($this->model);
-		return $taskList;
+		$tasks = $this->taskList->related('task')->order('done, created');
+		return new TaskList($tasks, $this->model);
 	}
 
 
