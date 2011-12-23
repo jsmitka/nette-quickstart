@@ -6,7 +6,7 @@ abstract class SecuredPresenter extends BasePresenter
 	{
 		parent::startup();
 
-		if (!$this->user->isLoggedIn()) {
+		if (!$this->getUser()->isLoggedIn()) {
 			$this->redirect('Sign:in');
 		}
 	}

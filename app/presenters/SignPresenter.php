@@ -1,7 +1,7 @@
 <?php
 
 use Nette\Application\UI\Form,
-	Nette\Security;
+	Nette\Security as NS;
 
 
 /**
@@ -32,7 +32,7 @@ class SignPresenter extends BasePresenter
 			$user->login($values->username, $values->password);
 			$this->flashMessage('Přihlášení bylo úspěšné.', 'success');
 			$this->redirect('Homepage:');
-		} catch (Security\AuthenticationException $e) {
+		} catch (NS\AuthenticationException $e) {
 			$form->addError('Neplatné uživatelské jméno nebo heslo.');
 		}
 	}
