@@ -9,9 +9,9 @@ use Nette\Database\Table\Selection;
 class TaskList extends UI\Control
 {
 	/** @var \Nette\Database\Table\Selection */
-	private $selection;
+	private $tasks;
 
-	/** @var Model */
+	/** @var \Model */
 	private $model;
 
 	/** @var bool */
@@ -22,32 +22,32 @@ class TaskList extends UI\Control
 
 	/**
 	 * @param Nette\Database\Table\Selection $selection Model, jehož výpis se bude provádět.
-	 * @param Nette\ComponentModel\IContainer|null $parent Rodičovská komponenta.
-	 * @param string $name Jméno komponenty.
+	 * @param Model $model
 	 */
-	public function __construct(Selection $selection, Nette\ComponentModel\IContainer $parent = NULL, $name = NULL)
+	public function __construct(Selection $tasks, \Model $model)
 	{
-		parent::__construct($parent, $name);
-		$this->selection = $selection;
-	}
+		parent::__construct();
 
-
-	/**
-	 * Nastaví model. Je nutný pro aktualizaci úkolů.
-	 * @param \Model $model
-	 */
-	public function setModel($model)
-	{
+		$this->tasks = $tasks;
 		$this->model = $model;
 	}
 
 	/**
-	 * Získá model.
-	 * @return \Model
+	 * Nastaví, zda se má zobrazovat sloupeček se seznamem úkolů.
+	 * @param boolean $displayTaskList
 	 */
-	public function getModel()
+	public function setDisplayTaskList($displayTaskList)
 	{
-		return $this->model;
+		$this->displayTaskList = (bool)$displayTaskList;
+	}
+
+	/**
+	 * Nastaví, zda se má zobrazovat sloupeček s uživatelem, kterému je úkol přiřazen.
+	 * @param boolean $displayUser
+	 */
+	public function setDisplayUser($displayUser)
+	{
+		$this->displayUser = (bool)$displayUser;
 	}
 
 
@@ -57,7 +57,7 @@ class TaskList extends UI\Control
 	public function render()
 	{
 		$this->template->setFile(__DIR__ . '/TaskList.latte');
-		$this->template->tasks = $this->selection;
+		$this->template->tasks = $this->tasks;
 		$this->template->displayUser = $this->displayUser;
 		$this->template->displayTaskList = $this->displayTaskList;
 		$this->template->userId = $this->presenter->getUser()->getId();
@@ -84,39 +84,4 @@ class TaskList extends UI\Control
 		}
 	}
 
-	/**
-	 * Nastaví, zda se má zobrazovat sloupeček se seznamem úkolů.
-	 * @param boolean $displayTaskList
-	 */
-	public function setDisplayTaskList($displayTaskList)
-	{
-		$this->displayTaskList = $displayTaskList;
-	}
-
-	/**
-	 * Zjistí, zda se zobrazuje sloupeček se seznamem úkolů.
-	 * @return boolean
-	 */
-	public function getDisplayTaskList()
-	{
-		return $this->displayTaskList;
-	}
-
-	/**
-	 * Nastaví, zda se má zobrazovat sloupeček s uživatelem, kterému je úkol přiřazen.
-	 * @param boolean $displayUser
-	 */
-	public function setDisplayUser($displayUser)
-	{
-		$this->displayUser = $displayUser;
-	}
-
-	/**
-	 * Zjistí, zda se zobrazuje sloupeček s uživatelem.
-	 * @return boolean
-	 */
-	public function getDisplayUser()
-	{
-		return $this->displayUser;
-	}
 }

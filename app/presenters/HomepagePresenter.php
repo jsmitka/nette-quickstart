@@ -8,9 +8,8 @@ class HomepagePresenter extends SecuredPresenter
 
 	public function createComponentIncompleteTasks()
 	{
-		$taskList = new TaskList($this->model->getTasks()
-			->where(array('done' => false))->order('created ASC'));
-		$taskList->setModel($this->model);
+		$tasks = $this->model->getTasks()->where(array('done' => false))->order('created ASC');
+		$taskList = new TaskList($tasks, $this->model);
 		$taskList->setDisplayTaskList(TRUE);
 		return $taskList;
 	}
@@ -18,10 +17,10 @@ class HomepagePresenter extends SecuredPresenter
 
 	public function createComponentUserTasks()
 	{
-		$taskList = new TaskList($this->model->getTasks()->where(array(
+		$tasks = $this->model->getTasks()->where(array(
 			'done' => false, 'user_id' => $this->getUser()->getId()
-		)));
-		$taskList->setModel($this->model);
+		));
+		$taskList = new TaskList($tasks, $this->model);
 		$taskList->setDisplayTaskList(TRUE);
 		$taskList->setDisplayUser(FALSE);
 		return $taskList;

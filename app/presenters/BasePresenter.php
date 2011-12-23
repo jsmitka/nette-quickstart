@@ -38,8 +38,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 	 */
 	protected function createComponentNewTasklistForm()
 	{
-		if (!$this->user->isLoggedIn())
-			return NULL;
+		if (!$this->getUser()->isLoggedIn()) {
+			throw new Nette\Application\ForbiddenRequestException();
+		}
+
 		$form = new Form();
 		$form->addText('title', 'Název:', 15, 50)
 			->addRule(Form::FILLED, 'Musíte zadat název seznamu úkolů.');
@@ -60,4 +62,14 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 		$this->flashMessage('Seznam úkolů založen.', 'success');
 		$this->redirect('this');
 	}
+
+	/**
+	 * Signál na odhlášení uživatele
+	 */
+	public function handleSignOut()
+	{
+		$this->getUser()->logout();
+		$this->redirect('Sign:in');
+	}
+
 }
