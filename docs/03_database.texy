@@ -20,8 +20,7 @@ vytvoříme tabulku uživatelů a pak jednoduchou tabulku seznamů úkolů.
 K jednotlivým úkolům (tabulka `task`) tedy budeme ukládat následující informace:
 
 - `id`: unikátní ID úkolu. Sloupeček typu `INT` a bude primárním klíčem s `AUTO_INCREMENT`.
-- `text`: popis úkolu. Na uložení budeme potřebovat sloupeček typu `VARCHAR(100)`. V případě potřeby můžeme samozřejmě
-délku zvolit podle našich potřeb.
+- `text`: popis úkolu. Na uložení budeme potřebovat sloupeček typu `VARCHAR(100)`. V případě potřeby můžeme samozřejmě délku zvolit podle našich potřeb.
 - `created`: čas, kdy byl úkol vytvořen. Sloupec bude typu `DATETIME`.
 - `done`: značka (flag), zda byl úkol splněn. Můžeme využít typ `BOOLEAN`, který je synonynmem pro `TINYINT(1)`.
 - `user_id`: ID uživatele, ke kterému je úkol přiřazen. Sloupec typu `INT`.
@@ -39,12 +38,8 @@ od knihovny NotORM.
 Již zmíněná tabulka uživatelů bude mít následující strukturu:
 
 - `id`: unikátní ID uživatele. Opět `INT` a primární klíč s `AUTO_INCREMENT`.
-- `username`: uživatelské jméno. `VARCHAR(20)`. Uživatelské jménu musí být navíc unikátní, takže nad sloupcem vytvoříme
-unikátní klíč.
-- `password`: heslo uživatele. Pro uložení hesla použijeme některou z již existujících hashovacích funkcí.
-Podle délky hashe zvolíme velikost sloupce. My použiejeme SHA512, její použití je velmi jednoduché.
-Její délka je 512 bitů, takže 64 bajtů. V databázi jej uložíme hexadecimálně, takže dostáváme výslednou
-délku 128 znaků. Použijeme `CHAR(128)`.
+- `username`: uživatelské jméno. `VARCHAR(20)`. Uživatelské jménu musí být navíc unikátní, takže nad sloupcem vytvoříme unikátní klíč.
+- `password`: heslo uživatele. Pro uložení hesla použijeme některou z již existujících hashovacích funkcí. Podle délky hashe zvolíme velikost sloupce. My použiejeme SHA512, její použití je velmi jednoduché. Její délka je 512 bitů, takže 64 bajtů. V databázi jej uložíme hexadecimálně, takže dostáváme výslednou délku 128 znaků. Použijeme `CHAR(128)`.
 - `name`: skutečné jméno uživatele, které budeme zobrazovat v aplikaci. `VARCHAR(30)`.
 
 .[note]

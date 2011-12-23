@@ -158,7 +158,8 @@ $configurator->createRobotLoader()
 	->register();
 
 // Create Dependency Injection container from config.neon file
-$container = $configurator->loadConfig(__DIR__ . '/config.neon');
+$configurator->addConfig(__DIR__ . '/config.neon');
+$container = $configurator->createContainer();
 
 // Opens already started session
 if ($container->session->exists()) {
@@ -204,14 +205,15 @@ Nastavení `Debugger::$logDirectory` totiž určuje adresář, do kterého se na
 
 /---php
 $configurator = new Nette\Config\Configurator;
-$configurator->setCacheDirectory(__DIR__ . '/../temp');
+$configurator->setTempDirectory(__DIR__ . '/../temp');
 
 $configurator->createRobotLoader()
 	->addDirectory(APP_DIR)
 	->addDirectory(LIBS_DIR)
 	->register();
 
-$container = $configurator->loadConfig(__DIR__ . '/config.neon');
+$configurator->addConfig(__DIR__ . '/config.neon');
+$container = $configurator->createContainer();
 \---
 
 Načte konfigurační soubor `config.neon`. Tento soubor obsahuje nastavení naší aplikace, hlavně připojení k databázi.
