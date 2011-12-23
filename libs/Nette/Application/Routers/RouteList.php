@@ -19,6 +19,7 @@ use Nette;
  * The router broker.
  *
  * @author     David Grudl
+ * @property-read string $module
  */
 class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 {
@@ -130,6 +131,16 @@ class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 			throw new Nette\InvalidArgumentException("Argument must be IRouter descendant.");
 		}
 		parent::offsetSet($index, $route);
+	}
+
+
+
+	/**
+	 * @return string
+	 */
+	public function getModule()
+	{
+		return $this->module;
 	}
 
 }

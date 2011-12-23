@@ -54,9 +54,10 @@ class PresenterFactory implements IPresenterFactory
 	 */
 	public function createPresenter($name)
 	{
-		$class = $this->getPresenterClass($name);
-		$presenter = new $class;
-		$presenter->setContext($this->context);
+		$presenter = $this->context->createInstance($this->getPresenterClass($name));
+		if (method_exists($presenter, 'setContext')) {
+			$this->context->callMethod(array($presenter, 'setContext'));
+		}
 		return $presenter;
 	}
 
@@ -84,7 +85,7 @@ class PresenterFactory implements IPresenterFactory
 			// internal autoloading
 			$file = $this->formatPresenterFile($name);
 			if (is_file($file) && is_readable($file)) {
-				Nette\Utils\LimitedScope::load($file);
+				Nette\Utils\LimitedScope::load($file, TRUE);
 			}
 
 			if (!class_exists($class)) {

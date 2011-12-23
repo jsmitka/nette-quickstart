@@ -26,7 +26,7 @@ final class Framework
 	/** Nette Framework version identification */
 	const NAME = 'Nette Framework',
 		VERSION = '2.0-beta',
-		REVISION = '7f6bc92 released on 2011-12-07';
+		REVISION = 'a1b5427 released on 2011-12-23';
 
 	/** @var bool set to TRUE if your host has disabled function ini_set */
 	public static $iAmUsingBadHost = FALSE;

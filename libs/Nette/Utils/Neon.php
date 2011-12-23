@@ -22,10 +22,7 @@ use Nette;
  */
 class Neon extends Nette\Object
 {
-	const BLOCK = 1,
-		VALUE_KEY = '_value',
-		ATTRIBUTES_KEY = '_attributes';
-		
+	const BLOCK = 1;
 
 	/** @var array */
 	private static $patterns = array(
@@ -33,7 +30,7 @@ class Neon extends Nette\Object
 		'[:-](?=\s|$)|[,=[\]{}()]', // symbol
 		'?:#.*', // comment
 		'\n[\t ]*', // new line + indent
-		'[^#"\',:=[\]{}()<>\x00-\x20!`](?:[^#,:=\]})>(\x00-\x1F]+|:(?!\s|$)|(?<!\s)#)*(?<!\s)', // literal / boolean / integer / float
+		'[^#"\',=[\]{}()<>\x00-\x20!`](?:[^#,:=\]})>(\x00-\x1F]+|:(?!\s|$)|(?<!\s)#)*(?<!\s)', // literal / boolean / integer / float
 		'?:[\t ]+', // whitespace
 	);
 
@@ -63,17 +60,25 @@ class Neon extends Nette\Object
 	{
 		if ($var instanceof \DateTime) {
 			return $var->format('Y-m-d H:i:s O');
+
+		} elseif ($var instanceof NeonEntity) {
+			return self::encode($var->value) . '(' . substr(self::encode($var->attributes), 1, -1) . ')';
 		}
+
 		if (is_object($var)) {
 			$obj = $var; $var = array();
 			foreach ($obj as $k => $v) {
 				$var[$k] = $v;
 			}
 		}
+
 		if (is_array($var)) {
 			$isList = Validators::isList($var);
 			$s = '';
 			if ($options & self::BLOCK) {
+				if (count($var) === 0){
+					return "[]";
+				}
 				foreach ($var as $k => $v) {
 					$v = self::encode($v, self::BLOCK);
 					$s .= ($isList ? '-' : self::encode($k) . ':')
@@ -95,6 +100,10 @@ class Neon extends Nette\Object
 			&& preg_match('~^' . self::$patterns[4] . '$~', $var)
 		) {
 			return $var;
+
+		} elseif (is_float($var)) {
+			$var = var_export($var, TRUE);
+			return strpos($var, '.') === FALSE ? $var . '.0' : $var;
 
 		} else {
 			return json_encode($var);
@@ -163,11 +172,10 @@ class Neon extends Nette\Object
 				if ($hasKey || !$hasValue) {
 					$this->error();
 				}
-				if (is_array($value) || (is_object($value) && !method_exists($value, '__toString'))) {
+				if (is_array($value) || is_object($value)) {
 					$this->error('Unacceptable key');
-				} else {
-					$key = (string) $value;
 				}
+				$key = (string) $value;
 				$hasKey = TRUE;
 				$hasValue = FALSE;
 
@@ -180,12 +188,14 @@ class Neon extends Nette\Object
 
 			} elseif (isset(self::$brackets[$t])) { // Opening bracket [ ( {
 				if ($hasValue) {
-					if ($t === '(') { // Object
-						$n++;
-						$value = array(self::VALUE_KEY => $value, self::ATTRIBUTES_KEY => $this->parse(NULL, array()));
-					} else {
+					if ($t !== '(') {
 						$this->error();
 					}
+					$n++;
+					$entity = new NeonEntity;
+					$entity->value = $value;
+					$entity->attributes = $this->parse(NULL, array());
+					$value = $entity;
 				} else {
 					$n++;
 					$value = $this->parse(NULL, array());
@@ -342,6 +352,17 @@ class Neon extends Nette\Object
 		throw new NeonException(str_replace('%s', $token, $message) . " on line $line, column $col.");
 	}
 
+}
+
+
+
+/**
+ * The exception that indicates error of NEON decoding.
+ */
+class NeonEntity extends \stdClass
+{
+	public $value;
+	public $attributes;
 }
 
 

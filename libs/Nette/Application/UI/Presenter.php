@@ -110,6 +110,16 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 
+	public function __construct(Nette\DI\IContainer $context)
+	{
+		$this->context = $context;
+		if ($this->invalidLinkMode === NULL) {
+			$this->invalidLinkMode = $context->parameters['productionMode'] ? self::INVALID_LINK_SILENT : self::INVALID_LINK_WARNING;
+		}
+	}
+
+
+
 	/**
 	 * @return Nette\Application\Request
 	 */
@@ -885,7 +895,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 				$action = self::DEFAULT_ACTION;
 			}
 
-			$current = ($action === '*' || $action === $this->action) && $presenterClass === get_class($this); // TODO
+			$current = ($action === '*' || strcasecmp($action, $this->action) === 0) && $presenterClass === get_class($this); // TODO
 
 			$reflection = new PresenterComponentReflection($presenterClass);
 			if ($args || $destination === 'this') {
@@ -1255,23 +1265,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 	/**
-	 * Gets the context.
-	 * @return Presenter  provides a fluent interface
-	 */
-	public function setContext(Nette\DI\IContainer $context)
-	{
-		$this->context = $context;
-		if ($this->invalidLinkMode === NULL) {
-			$this->invalidLinkMode = $context->parameters['productionMode'] ? self::INVALID_LINK_SILENT : self::INVALID_LINK_WARNING;
-		}
-		return $this;
-	}
-
-
-
-	/**
-	 * Gets the context.
-	 * @return Nette\DI\IContainer
+	 * @deprecated
 	 */
 	final public function getContext()
 	{
@@ -1297,7 +1291,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	protected function getHttpRequest()
 	{
-		return $this->context->httpRequest;
+		return $this->context->getByClass('Nette\Http\IRequest');
 	}
 
 
@@ -1307,7 +1301,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	protected function getHttpResponse()
 	{
-		return $this->context->httpResponse;
+		return $this->context->getByClass('Nette\Http\IResponse');
 	}
 
 
@@ -1317,7 +1311,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	protected function getHttpContext()
 	{
-		return $this->context->httpContext;
+		return $this->context->getByClass('Nette\Http\Context');
 	}
 
 
@@ -1327,7 +1321,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	public function getApplication()
 	{
-		return $this->context->application;
+		return $this->context->getByClass('Nette\Application\Application');
 	}
 
 
@@ -1337,7 +1331,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	public function getSession($namespace = NULL)
 	{
-		$handler = $this->context->session;
+		$handler = $this->context->getByClass('Nette\Http\Session');
 		return $namespace === NULL ? $handler : $handler->getSection($namespace);
 	}
 
@@ -1348,7 +1342,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	public function getUser()
 	{
-		return $this->context->user;
+		return $this->context->getByClass('Nette\Http\IUser');
 	}
 
 }

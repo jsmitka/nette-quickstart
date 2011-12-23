@@ -23,6 +23,7 @@ use Nette,
  * @author     David Grudl
  *
  * @property-read Connection $connection
+ * @property-write $fetchMode
  */
 class Statement extends \PDOStatement
 {
@@ -103,20 +104,7 @@ class Statement extends \PDOStatement
 	 */
 	public function normalizeRow($row)
 	{
-		if ($this->types === NULL) {
-			$this->types = array();
-			if ($this->connection->getSupplementalDriver()->supports['meta']) { // workaround for PHP bugs #53782, #54695
-				$col = 0;
-				foreach ($row as $key => $foo) {
-					$type = $this->getColumnMeta($col++);
-					if (isset($type['native_type'])) {
-						$this->types[$key] = static::detectType($type['native_type']);
-					}
-				}
-			}
-		}
-
-		foreach ($this->types as $key => $type) {
+		foreach ($this->detectColumnTypes() as $key => $type) {
 			$value = $row[$key];
 			if ($value === NULL || $value === FALSE || $type === IReflection::FIELD_TEXT) {
 
@@ -128,12 +116,33 @@ class Statement extends \PDOStatement
 
 			} elseif ($type === IReflection::FIELD_BOOL) {
 				$row[$key] = ((bool) $value) && $value !== 'f' && $value !== 'F';
+
+			} elseif ($type === IReflection::FIELD_DATETIME) {
+				$row[$key] = new Nette\DateTime($value);
+
 			}
 		}
 
 		return $this->connection->getSupplementalDriver()->normalizeRow($row, $this);
 	}
 
+
+
+	private function detectColumnTypes()
+	{
+		if ($this->types === NULL) {
+			$this->types = array();
+			if ($this->connection->getSupplementalDriver()->supports['meta']) { // workaround for PHP bugs #53782, #54695
+				$col = 0;
+				while ($meta = $this->getColumnMeta($col++)) {
+					if (isset($meta['native_type'])) {
+						$this->types[$meta['name']] = static::detectType($meta['native_type']);
+					}
+				}
+			}
+		}
+		return $this->types;
+	}
 
 
 	/********************* misc tools ****************d*g**/

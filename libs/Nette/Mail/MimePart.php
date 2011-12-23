@@ -21,9 +21,10 @@ use Nette,
  *
  * @author     David Grudl
  *
- * @property   string $encoding
- * @property   string $body
  * @property-read array $headers
+ * @property-write $contentType
+ * @property   string $encoding
+ * @property   mixed $body
  */
 class MimePart extends Nette\Object
 {
@@ -72,19 +73,15 @@ class MimePart extends Nette\Object
 				$tmp = array();
 			}
 
-			foreach ($value as $email => $name) {
-				if ($name !== NULL && !Strings::checkEncoding($name)) {
-					throw new Nette\InvalidArgumentException("Name is not valid UTF-8 string.");
+			foreach ($value as $email => $recipient) {
+				if ($recipient !== NULL && !Strings::checkEncoding($recipient)) {
+					Nette\Utils\Validators::assert($recipient, 'unicode', "header '$name'");
 				}
-
-				if (!preg_match('#^[^-@",\s][^@",\s]+@[^@",\s]+\.[a-z]{2,10}$#i', $email)) {
-					throw new Nette\InvalidArgumentException("Email address '$email' is not valid.");
-				}
-
-				if (preg_match('#[\r\n]#', $name)) {
+				if (preg_match('#[\r\n]#', $recipient)) {
 					throw new Nette\InvalidArgumentException("Name must not contain line separator.");
 				}
-				$tmp[$email] = $name;
+				Nette\Utils\Validators::assert($email, 'email', "header '$name'");
+				$tmp[$email] = $recipient;
 			}
 
 		} else {
@@ -156,6 +153,10 @@ class MimePart extends Nette\Object
 				$offset += strlen($email);
 			}
 			return substr($s, 0, -1); // last comma
+
+		} elseif (preg_match('#^(\S+; (?:file)?name=)"(.*)"$#', $this->headers[$name], $m)) { // Content-Disposition
+			$offset += strlen($m[1]);
+			return $m[1] . '"' . self::encodeHeader($m[2], $offset) . '"';
 
 		} else {
 			return self::encodeHeader($this->headers[$name], $offset);

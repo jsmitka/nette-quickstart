@@ -241,7 +241,18 @@ protected function createComponentNewTasklistForm()
 }
 \---
 
-Pokud uživatel nebude přihlášen, formulář se jednoduše nevytvoří.
+Pokud uživatel nebude přihlášen, formulář se jednoduše nevytvoří. Rovnou také můžeme zajistit, aby v políčku pro výběr
+uživatele byl předvyplněn aktuální uživatel:
+
+/---php
+$form->addSelect('userId', 'Pro:', $this->model->getUsers()->fetchPairs('id', 'name'))
+	->setPrompt('- Vyberte -')
+	->addRule(Form::FILLED, 'Je nutné vybrat, komu je úkol přiřazen.')
+	->setDefaultValue($this->getUser()->getId());
+\---
+
+Metoda `setDefaultValue()` slouží k nastavení výchozí hodnoty jednoho formulářového prvku. Formulář samotný má také
+metodu `setDefaults()`, která přejímá jako parametr asociativní pole a nastavuje výchozí hodnoty celému formuláři.
 
 Seznamy úkolů v levém sloupci zmizely a ani nepůjdou zakládat nové. Pokud se nyní přihlásíme, opět se nám zobrazí.
 Připravená data mají založené 3 uživatele: `admin`, `pepa`, `franta`. Jejich hesla jsou shodná s jejich uživatelským jménem.

@@ -98,13 +98,18 @@ class Cache extends Nette\Object implements \ArrayAccess
 
 
 	/**
-	 * Retrieves the specified item from the cache or returns NULL if the key is not found.
+	 * Reads the specified item from the cache or generate it.
 	 * @param  mixed key
+	 * @param  callable
 	 * @return mixed|NULL
 	 */
-	public function load($key)
+	public function load($key, $fallback = NULL)
 	{
-		return $this->storage->read($this->namespace . md5(is_scalar($key) ? $key : serialize($key)));
+		$data = $this->storage->read($this->namespace . md5(is_scalar($key) ? $key : serialize($key)));
+		if ($data === NULL && $fallback) {
+			return $this->save($key, callback($fallback));
+		}
+		return $data;
 	}
 
 
@@ -132,15 +137,23 @@ class Cache extends Nette\Object implements \ArrayAccess
 		$key = $this->namespace . md5(is_scalar($key) ? $key : serialize($key));
 
 		if ($data instanceof Nette\Callback || $data instanceof \Closure) {
-			Nette\Utils\CriticalSection::enter();
-			$data = $data->__invoke();
-			Nette\Utils\CriticalSection::leave();
+			$this->storage->lock($key);
+			$data = callback($data)->invokeArgs(array(&$dp));
 		}
 
 		if ($data === NULL) {
-			return $this->storage->remove($key);
+			$this->storage->remove($key);
+		} else {
+			$this->storage->write($key, $data, $this->completeDependencies($dp, $data));
+			return $data;
+		}
+	}
 
-		} elseif (is_object($data)) {
+
+
+	private function completeDependencies($dp, $data)
+	{
+		if (is_object($data)) {
 			$dp[self::CALLBACKS][] = array(array(__CLASS__, 'checkSerializationVersion'), get_class($data),
 				Nette\Reflection\ClassType::from($data)->getAnnotation('serializationVersion'));
 		}
@@ -175,8 +188,10 @@ class Cache extends Nette\Object implements \ArrayAccess
 			unset($dp[self::CONSTS]);
 		}
 
-		$this->storage->write($key, $data, (array) $dp);
-		return $data;
+		if (!is_array($dp)) {
+			$dp = array();
+		}
+		return $dp;
 	}
 
 
@@ -219,13 +234,10 @@ class Cache extends Nette\Object implements \ArrayAccess
 	public function call($function)
 	{
 		$key = func_get_args();
-		$data = $this->load($key);
-		if ($data === NULL) {
-			$args = $key;
-			array_shift($args);
-			$data = $this->save($key, call_user_func_array($function, $args));
-		}
-		return $data;
+		return $this->load($key, function() use ($function, $key) {
+			array_shift($key);
+			return call_user_func_array($function, $key);
+		});
 	}
 
 

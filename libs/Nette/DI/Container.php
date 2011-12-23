@@ -205,16 +205,20 @@ class Container extends Nette\FreezableObject implements IContainer
 	/**
 	 * Resolves service by type.
 	 * @param  string  class or interface
+	 * @param  bool    throw exception if service doesn't exist?
 	 * @return object  service or NULL
-	 * @throws ServiceCreationException
+	 * @throws MissingServiceException
 	 */
-	public function findByClass($class)
+	public function getByClass($class, $need = TRUE)
 	{
 		$lower = ltrim(strtolower($class), '\\');
-		if (isset($this->classes[$lower])) {
-			if ($this->classes[$lower] === FALSE) {
-				throw new ServiceCreationException("Multiple services of type $class found.");
+		if (!isset($this->classes[$lower])) {
+			if ($need) {
+				throw new MissingServiceException("Service of type $class not found.");
 			}
+		} elseif ($this->classes[$lower] === FALSE) {
+			throw new MissingServiceException("Multiple services of type $class found.");
+		} else {
 			return $this->getService($this->classes[$lower]);
 		}
 	}
@@ -256,9 +260,23 @@ class Container extends Nette\FreezableObject implements IContainer
 			return $rc->newInstanceArgs(Helpers::autowireArguments($constructor, $args, $this));
 
 		} elseif ($args) {
-			throw new Nette\InvalidArgumentException("Unable to pass arguments, class $class has not constructor.");
+			throw new Nette\InvalidArgumentException("Unable to pass arguments, class $class has no constructor.");
 		}
 		return new $class;
+	}
+
+
+
+	/**
+	 * Calls method using autowiring.
+	 * @param  mixed   class, object, function, callback
+	 * @param  array   arguments
+	 * @return mixed
+	 */
+	public function callMethod($function, array $args = array())
+	{
+		$callback = callback($function);
+		return $callback->invokeArgs(Helpers::autowireArguments($callback->toReflection(), $args, $this));
 	}
 
 
