@@ -1,0 +1,44 @@
+#
+# SECURITY WARNING: it is CRITICAL that this file & directory are NOT accessible directly via a web browser!
+#
+# If you don't protect this directory from direct web access, anybody will be able to see your passwords.
+# http://nette.org/security-warning
+#
+common:
+	parameters:
+		database:
+			driver: mysql
+			host: localhost
+			dbname: quickstart
+			user: quickstart
+			password: qs
+
+
+	php:
+		date.timezone: Europe/Prague
+		# session.save_path: "%tempDir%/sessions"
+		# zlib.output_compression: yes
+
+
+	services:
+		database:
+			class: Nette\Database\Connection(
+				'%database.driver%:host=%database.host%;dbname=%database.dbname%'
+				%database.user%
+				%database.password%
+			)
+			setup:
+				- setCacheStorage(...)
+				#- setDatabaseReflection( Nette\Database\Reflection\DiscoveredReflection() )
+
+		model: Model( @database )
+
+		authenticator: Authenticator( @model::getUsers() )
+
+
+	factories:
+
+
+production < common:
+
+development < common:
