@@ -68,6 +68,9 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	/** @var string grouping condition */
 	protected $having = '';
 
+	/** @var bool recheck referencing keys */
+	protected $checkReferenceNewKeys = FALSE;
+
 	/** @var array of referenced TableSelection */
 	protected $referenced = array();
 
@@ -103,7 +106,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 		$this->name = $table;
 		$this->connection = $connection;
 		$this->primary = $this->getPrimary($table);
-		$this->delimitedName = $connection->getSupplementalDriver()->delimite($this->name);
+		$this->delimitedName = $this->tryDelimite($this->name);
 		$this->delimitedPrimary = $connection->getSupplementalDriver()->delimite($this->primary);
 	}
 
@@ -179,7 +182,11 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	{
 		if (is_array($condition)) { // where(array('column1' => 1, 'column2 > ?' => 2))
 			foreach ($condition as $key => $val) {
-				$this->where($key, $val);
+				if (is_int($key)) {
+					$this->where($val);	// where('full condition')
+				} else {
+					$this->where($key, $val);	// where('column', 1)
+				}
 			}
 			return $this;
 		}
@@ -305,12 +312,12 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	 */
 	public function aggregation($function)
 	{
-		$join = $this->createJoins(implode(',', $this->conditions), TRUE) + $this->createJoins($function);
-		$query = "SELECT $function FROM $this->delimitedName" . implode($join);
-		if ($this->where) {
-			$query .= ' WHERE (' . implode(') AND (', $this->where) . ')';
-		}
-		foreach ($this->query($query)->fetch() as $val) {
+		$selection = clone $this;
+		$selection->select($function);
+		$selection->limit = null;
+		$selection->order = array();
+
+		foreach ($selection->fetch() as $val) {
 			return $val;
 		}
 	}
@@ -328,7 +335,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 			$this->execute();
 			return count($this->data);
 		}
-		return $this->aggregation("COUNT({$this->tryDelimite($column)})");
+		return $this->aggregation("COUNT($column)");
 	}
 
 
@@ -340,7 +347,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	 */
 	public function min($column)
 	{
-		return $this->aggregation("MIN({$this->tryDelimite($column)})");
+		return $this->aggregation("MIN($column)");
 	}
 
 
@@ -352,7 +359,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	 */
 	public function max($column)
 	{
-		return $this->aggregation("MAX({$this->tryDelimite($column)})");
+		return $this->aggregation("MAX($column)");
 	}
 
 
@@ -364,7 +371,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	 */
 	public function sum($column)
 	{
-		return $this->aggregation("SUM({$this->tryDelimite($column)})");
+		return $this->aggregation("SUM($column)");
 	}
 
 
@@ -403,14 +410,21 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	{
 		$driver = $this->connection->getSupplementalDriver();
 		$joins = array();
-		preg_match_all('~\\b([a-z][\\w.]*)\\.([a-z]\\w*)(\\s+IS\\b|\\s*<=>)?~i', $val, $matches, PREG_SET_ORDER);
-		foreach ($matches as $match) {
-			if ($match[1] !== $this->name) { // case-sensitive
-				$parent = $this->name;
-				foreach (explode('.', $match[1]) as $name) {
-					$table = $this->connection->databaseReflection->getReferencedTable($name, $this->name);
-					$column = $this->connection->databaseReflection->getReferencedColumn($name, $this->name);
-					$primary = $this->getPrimary($table);
+		preg_match_all('~\\b([a-z][\\w.:]*[.:])([a-z]\\w*)(\\s+IS\\b|\\s*<=>)?~i', $val, $matches);
+		foreach ($matches[1] as $names) {
+			$parent = $this->name;
+			if ($names !== "$parent.") { // case-sensitive
+				preg_match_all('~\\b([a-z][\\w]*)([.:])~', $names, $matches, PREG_SET_ORDER);
+				foreach ($matches as $match) {
+					list(, $name, $delimiter) = $match;
+
+					if ($delimiter === ':') {
+						list($table, $primary) = $this->connection->databaseReflection->getHasManyReference($parent, $name);
+						$column = $this->getPrimary($parent);
+					} else {
+						list($table, $column) = $this->connection->databaseReflection->getBelongsToReference($parent, $name);
+						$primary = $this->getPrimary($table);
+					}
 
 					$joins[$name] = ' '
 						. (!isset($joins[$name]) && $inner && !isset($match[3]) ? 'INNER' : 'LEFT')
@@ -508,16 +522,19 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 	protected function tryDelimite($s)
 	{
-		return preg_match('#^[a-z_][a-z0-9_.]*$#i', $s) // is identifier?
-			? implode('.', array_map(array($this->connection->getSupplementalDriver(), 'delimite'), explode('.', $s)))
-			: $s;
+		$driver = $this->connection->getSupplementalDriver();
+		return preg_replace_callback('#(?<=[\s,<>=]|^)[a-z_][a-z0-9_.]*(?=[\s,<>=]|$)#i', function($m) use ($driver) {
+			return strtoupper($m[0]) === $m[0]
+				? $m[0]
+				: implode('.', array_map(array($driver, 'delimite'), explode('.', $m[0])));
+		}, $s);
 	}
 
 
 
 	protected function removeExtraTables($expression)
 	{
-		return preg_replace('~(?:\\b[a-z_][a-z0-9_.:]*\.)?([a-z_][a-z0-9_]*)\.([a-z_*])~i', '\\1.\\2', $expression); // rewrite tab1.tab2.col
+		return preg_replace('~(?:\\b[a-z_][a-z0-9_.:]*[.:])?([a-z_][a-z0-9_]*)[.:]([a-z_*])~i', '\\1.\\2', $expression); // rewrite tab1.tab2.col
 	}
 
 
@@ -561,7 +578,7 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 	/**
 	 * Inserts row in a table.
-	 * @param  mixed array($column => $value)|Traversable for single row insert or TableSelection|string for INSERT ... SELECT
+	 * @param  mixed array($column => $value)|Traversable for single row insert or Selection|string for INSERT ... SELECT
 	 * @return ActiveRow or FALSE in case of an error or number of affected rows for INSERT ... SELECT
 	 */
 	public function insert($data)
@@ -575,22 +592,27 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 		$return = $this->connection->query("INSERT INTO $this->delimitedName", $data);
 
-		$this->rows = NULL;
 		if (!is_array($data)) {
 			return $return->rowCount();
 		}
 
+		$this->checkReferenceNewKeys = TRUE;
+
 		if (!isset($data[$this->primary]) && ($id = $this->connection->lastInsertId())) {
 			$data[$this->primary] = $id;
+			return $this->rows[$id] = new ActiveRow($data, $this);
+
+		} else {
+			return new ActiveRow($data, $this);
+
 		}
-		return new ActiveRow($data, $this);
 	}
 
 
 
 	/**
 	 * Updates all rows in result set.
-	 * @param  array ($column => $value)
+	 * @param  array|\Traversable ($column => $value)
 	 * @return int number of affected rows or FALSE in case of an error
 	 */
 	public function update($data)
@@ -634,27 +656,36 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 	/**
 	 * Returns referenced row.
 	 * @param  string
+	 * @param  string
+	 * @param  bool  checks if rows contains the same primary value relations
 	 * @return ActiveRow or NULL if the row does not exist
 	 */
-	public function getReferencedTable($name, & $column = NULL)
+	public function getReferencedTable($table, $column, $checkReferenceNewKeys = FALSE)
 	{
-		$column = $this->connection->databaseReflection->getReferencedColumn($name, $this->name);
-		$referenced = & $this->referenced[$name];
-		if ($referenced === NULL) {
+		$referenced = & $this->referenced[$table];
+		if ($referenced === NULL || $checkReferenceNewKeys || $this->checkReferenceNewKeys) {
 			$keys = array();
 			foreach ($this->rows as $row) {
-				if ($row[$column] !== NULL) {
-					$keys[$row[$column]] = NULL;
-				}
+				if ($row[$column] === NULL)
+					continue;
+
+				$key = $row[$column] instanceof ActiveRow ? $row[$column]->getPrimary() : $row[$column];
+				$keys[$key] = TRUE;
 			}
+
+			if ($referenced !== NULL && $keys === array_keys($this->rows)) {
+				$this->checkReferenceNewKeys = FALSE;
+				return $referenced;
+			}
+
 			if ($keys) {
-				$table = $this->connection->databaseReflection->getReferencedTable($name, $this->name);
 				$referenced = new Selection($table, $this->connection);
 				$referenced->where($table . '.' . $this->getPrimary($table), array_keys($keys));
 			} else {
 				$referenced = array();
 			}
 		}
+
 		return $referenced;
 	}
 
@@ -662,12 +693,12 @@ class Selection extends Nette\Object implements \Iterator, \ArrayAccess, \Counta
 
 	/**
 	 * Returns referencing rows.
-	 * @param  string table name
+	 * @param  string
+	 * @param  string
 	 * @return GroupedSelection
 	 */
-	public function getReferencingTable($table)
+	public function getReferencingTable($table, $column)
 	{
-		$column = $this->connection->databaseReflection->getReferencingColumn($table, $this->name);
 		$referencing = new GroupedSelection($table, $this, $column);
 		$referencing->where("$table.$column", array_keys((array) $this->rows)); // (array) - is NULL after insert
 		return $referencing;

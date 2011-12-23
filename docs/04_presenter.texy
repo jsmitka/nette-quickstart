@@ -158,7 +158,7 @@ jazykových konstrukcí. Šablony můžeme psát i bez nich, ale proč bychom to
 .[note]
 Seznam všech maker je samozřejmě v dokumentaci: "Výchozí Latte makra":[http://doc.nette.org/cs/default-macros].
 
-`{block content}` a `{/block}` definuje obsahový blok. Nette takzvanou dědičnost šablon. Hlavní šablona definuje
+`{block content}` a `{/block}` definuje obsahový blok. Nette používá takzvanou dědičnost šablon. Hlavní šablona definuje
 bloky, které pak zděděné šablony mohou (a některé musí) přepsat. Pokud není uvedeno jinak, tak šablona view dědí od
 šablony `@layout.latte`, kterou naleznete přímo ve složce `app/templates`. V ní se nachází řádek:
 
@@ -282,7 +282,7 @@ K view nám zbývá napsat jen šablonu. Ve složce `templates` vytvoříme podl
 Bude velmi podobná té předchozí:
 
 .[note]
-Při vytváření šablon na velikost písmen. Složka s názvem presenteru by měla začínat velkým písmenem, soubor se šablonou
+Při vytváření šablon záleží na velikost písmen. Složka s názvem presenteru by měla začínat velkým písmenem, soubor se šablonou
 malým. Při vývoji na Windows to nepoznáme, ale pokud aplikaci přeneseme na linuxový server, způsobí to řadu chyb.
 
 /---html

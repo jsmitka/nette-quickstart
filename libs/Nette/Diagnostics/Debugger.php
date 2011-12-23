@@ -44,6 +44,9 @@ final class Debugger
 	/** @var string URL pattern mask to open editor */
 	public static $editor = 'editor://open/?file=%file&line=%line';
 
+	/** @var string command to open browser (use 'start ""' in Windows) */
+	public static $browser;
+
 	/********************* Debugger::dump() ****************d*g**/
 
 	/** @var int  how many nested levels of array/object properties display {@link Debugger::dump()} */
@@ -200,38 +203,11 @@ final class Debugger
 		if (is_bool($mode)) {
 			self::$productionMode = $mode;
 
-		} elseif (is_string($mode)) { // IP addresses
-			$mode = preg_split('#[,\s]+#', "$mode 127.0.0.1 ::1");
-		}
-
-		if (is_array($mode)) { // IP addresses whitelist detection
-			self::$productionMode = !isset($_SERVER['REMOTE_ADDR']) || !in_array($_SERVER['REMOTE_ADDR'], $mode, TRUE);
-		}
-
-		if (self::$productionMode === self::DETECT) {
-			if (isset($_SERVER['SERVER_ADDR']) || isset($_SERVER['LOCAL_ADDR'])) { // IP address based detection
-				$addrs = array();
-				if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) { // proxy server detected
-					$addrs = preg_split('#,\s*#', $_SERVER['HTTP_X_FORWARDED_FOR']);
-				}
-				if (isset($_SERVER['REMOTE_ADDR'])) {
-					$addrs[] = $_SERVER['REMOTE_ADDR'];
-				}
-				$addrs[] = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : $_SERVER['LOCAL_ADDR'];
-				self::$productionMode = FALSE;
-				foreach ($addrs as $addr) {
-					$oct = explode('.', $addr);
-					if ($addr !== '::1' && (count($oct) !== 4 || ($oct[0] !== '10' && $oct[0] !== '127' && ($oct[0] !== '172' || $oct[1] < 16 || $oct[1] > 31)
-						&& ($oct[0] !== '169' || $oct[1] !== '254') && ($oct[0] !== '192' || $oct[1] !== '168')))
-					) {
-						self::$productionMode = TRUE;
-						break;
-					}
-				}
-
-			} else {
-				self::$productionMode = !self::$consoleMode;
-			}
+		} elseif ($mode !== self::DETECT || self::$productionMode === NULL) { // IP addresses or computer names whitelist detection
+			$mode = is_string($mode) ? preg_split('#[,\s]+#', $mode) : array($mode);
+			$mode[] = '127.0.0.1';
+			$mode[] = '::1';
+			self::$productionMode = !in_array(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : php_uname('n'), $mode, TRUE);
 		}
 
 		// logging configuration
@@ -300,7 +276,7 @@ final class Debugger
 	 * Logs message or exception to file (if not disabled) and sends email notification (if enabled).
 	 * @param  string|Exception
 	 * @param  int  one of constant Debugger::INFO, WARNING, ERROR (sends email), CRITICAL (sends email)
-	 * @return void
+	 * @return string logged error filename
 	 */
 	public static function log($message, $priority = self::INFO)
 	{
@@ -313,17 +289,18 @@ final class Debugger
 
 		if ($message instanceof \Exception) {
 			$exception = $message;
-			$message = "PHP Fatal error: "
-				. ($message instanceof Nette\FatalErrorException
-					? $exception->getMessage()
-					: "Uncaught exception " . get_class($exception) . " with message '" . $exception->getMessage() . "'")
+			$message = ($message instanceof Nette\FatalErrorException
+				? 'Fatal error: ' . $exception->getMessage()
+				: get_class($exception) . ": " . $exception->getMessage())
 				. " in " . $exception->getFile() . ":" . $exception->getLine();
 
 			$hash = md5($exception );
-			$exceptionFilename = "exception " . @date('Y-m-d H-i-s') . " $hash.html";
+			$exceptionFilename = "exception-" . @date('Y-m-d-H-i-s') . "-$hash.html";
 			foreach (new \DirectoryIterator(self::$logDirectory) as $entry) {
 				if (strpos($entry, $hash)) {
-					$exceptionFilename = NULL; break;
+					$exceptionFilename = $entry;
+					$saved = TRUE;
+					break;
 				}
 			}
 		}
@@ -335,13 +312,17 @@ final class Debugger
 			!empty($exceptionFilename) ? ' @@  ' . $exceptionFilename : NULL
 		), $priority);
 
-		if (!empty($exceptionFilename) && $logHandle = @fopen(self::$logDirectory . '/'. $exceptionFilename, 'w')) {
-			ob_start(); // double buffer prevents sending HTTP headers in some PHP
-			ob_start(function($buffer) use ($logHandle) { fwrite($logHandle, $buffer); }, 1);
-			self::$blueScreen->render($exception);
-			ob_end_flush();
-			ob_end_clean();
-			fclose($logHandle);
+		if (!empty($exceptionFilename)) {
+			$exceptionFilename = self::$logDirectory . '/' . $exceptionFilename;
+			if (empty($saved) && $logHandle = @fopen($exceptionFilename, 'w')) {
+				ob_start(); // double buffer prevents sending HTTP headers in some PHP
+				ob_start(function($buffer) use ($logHandle) { fwrite($logHandle, $buffer); }, 1);
+				self::$blueScreen->render($exception);
+				ob_end_flush();
+				ob_end_clean();
+				fclose($logHandle);
+			}
+			return strtr($exceptionFilename, '\\/', DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR);
 		}
 	}
 
@@ -408,6 +389,12 @@ final class Debugger
 			} else {
 				if (self::$consoleMode) { // dump to console
 					echo "$exception\n";
+					if ($file = self::log($exception)) {
+						echo "(stored in $file)\n";
+						if (self::$browser) {
+							exec(self::$browser . ' ' . escapeshellarg($file));
+						}
+					}
 
 				} elseif (self::isHtmlMode()) { // dump to browser
 					self::$blueScreen->render($exception);
@@ -416,7 +403,10 @@ final class Debugger
 					}
 
 				} elseif (!self::fireLog($exception, self::ERROR)) { // AJAX or non-HTML mode
-					self::log($exception);
+					$file = self::log($exception);
+					if (!headers_sent()) {
+						header("X-Nette-Error-Log: $file");
+					}
 				}
 			}
 
@@ -588,7 +578,7 @@ final class Debugger
 		}
 
 		if (self::$consoleMode) {
-			$output = htmlspecialchars_decode(strip_tags($output), ENT_NOQUOTES);
+			$output = htmlspecialchars_decode(strip_tags($output), ENT_QUOTES);
 		}
 
 		if ($return) {

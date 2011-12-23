@@ -81,7 +81,7 @@ class TaskPresenter extends SecuredPresenter
 		if (!$this->isAjax()) {
 			$this->redirect('this');
 		} else {
-			$form->setValues(array('userId' => $this->getUser()->getId()), TRUE);
+			$form->setValues(array('userId' => $form->values->userId), TRUE);
 			$this->invalidateControl('form');
 			$this['taskList']->invalidateControl();
 		}

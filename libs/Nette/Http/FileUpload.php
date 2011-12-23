@@ -164,6 +164,7 @@ class FileUpload extends Nette\Object
 	 */
 	public function move($dest)
 	{
+		umask(0000);
 		@mkdir(dirname($dest), 0777, TRUE); // @ - dir may already exist
 		if (!call_user_func(is_uploaded_file($this->tmpName) ? 'move_uploaded_file' : 'rename', $this->tmpName, $dest)) {
 			throw new Nette\InvalidStateException("Unable to move uploaded file '$this->tmpName' to '$dest'.");

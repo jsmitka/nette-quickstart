@@ -40,6 +40,9 @@ final class Helpers
 			}
 			return $res;
 
+		} elseif ($var instanceof Statement) {
+			return new Statement(self::expand($var->entity, $params, $recursive), self::expand($var->arguments, $params, $recursive));
+
 		} elseif (!is_string($var)) {
 			return $var;
 		}
@@ -58,7 +61,7 @@ final class Helpers
 
 			} else {
 				$val = Nette\Utils\Arrays::get($params, explode('.', $part));
-				if ($recursive && is_string($val)) {
+				if ($recursive) {
 					$val = self::expand($val, $params, (is_array($recursive) ? $recursive : array()) + array($part => 1));
 				}
 				if (strlen($part) + 2 === strlen($var)) {
@@ -71,6 +74,25 @@ final class Helpers
 			}
 		}
 		return $res;
+	}
+
+
+
+	/**
+	 * Expand counterpart.
+	 * @param  mixed
+	 * @return mixed
+	 */
+	public static function escape($value)
+	{
+		if (is_array($value)) {
+			array_walk_recursive($value, function(&$val) {
+				$val = is_string($val) ? str_replace('%', '%%', $val) : $val;
+			});
+		} elseif (is_string($value)) {
+			$value = str_replace('%', '%%', $value);
+		}
+		return $value;
 	}
 
 
@@ -96,8 +118,8 @@ final class Helpers
 				unset($arguments[$parameter->getName()]);
 				$optCount = 0;
 
-			} elseif ($parameter->getClass()) {
-				$res[$num] = $container->findByClass($parameter->getClass()->getName());
+			} elseif ($parameter->getClass()) { // has object typehint
+				$res[$num] = $container->getByClass($parameter->getClass()->getName());
 				if ($res[$num] === NULL) {
 					if ($parameter->allowsNull()) {
 						$optCount++;
@@ -112,7 +134,8 @@ final class Helpers
 				}
 
 			} elseif ($parameter->isOptional()) {
-				$res[$num] = $parameter->getDefaultValue();
+				// PDO::__construct has optional parameter without default value (and isArray() and allowsNull() returns FALSE)
+				$res[$num] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : NULL;
 				$optCount++;
 
 			} else {

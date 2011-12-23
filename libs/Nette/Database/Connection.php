@@ -22,8 +22,9 @@ use Nette,
  *
  * @author     David Grudl
  *
- * @property-read ISupplementalDriver $supplementalDriver
- * @property-read IReflection $databaseReflection
+ * @property       IReflection          $databaseReflection
+ * @property-read  ISupplementalDriver  $supplementalDriver
+ * @property-read  string               $dsn
  */
 class Connection extends PDO
 {
@@ -42,15 +43,12 @@ class Connection extends PDO
 	/** @var Nette\Caching\Cache */
 	private $cache;
 
-	/** @var array */
-	public $substitutions = array();
-
 	/** @var array of function(Statement $result, $params); Occurs after query is executed */
 	public $onQuery;
 
 
 
-	public function __construct($dsn, $username = NULL, $password  = NULL, array $options = NULL, IReflection $databaseReflection = NULL)
+	public function __construct($dsn, $username = NULL, $password  = NULL, array $options = NULL)
 	{
 		parent::__construct($this->dsn = $dsn, $username, $password, $options);
 		$this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -62,8 +60,10 @@ class Connection extends PDO
 		}
 
 		$this->preprocessor = new SqlPreprocessor($this);
-		$this->databaseReflection = $databaseReflection ?: new Reflection\ConventionalReflection;
-		$this->databaseReflection->setConnection($this);
+		if (func_num_args() > 4) {
+			trigger_error('Set database reflection via setDatabaseReflection().', E_USER_WARNING);
+			$this->setDatabaseReflection(func_get_arg(5));
+		}
 
 		Diagnostics\ConnectionPanel::initialize($this);
 	}
@@ -85,17 +85,40 @@ class Connection extends PDO
 
 
 
+	/**
+	 * Sets database reflection
+	 * @param  IReflection  database reflection object
+	 * @return Connection   provides a fluent interface
+	 */
+	public function setDatabaseReflection(IReflection $databaseReflection)
+	{
+		$databaseReflection->setConnection($this);
+		$this->databaseReflection = $databaseReflection;
+		return $this;
+	}
+
+
+
 	/** @return IReflection */
 	public function getDatabaseReflection()
 	{
+		if (!$this->databaseReflection) {
+			$this->setDatabaseReflection(new Reflection\ConventionalReflection);
+		}
 		return $this->databaseReflection;
 	}
 
 
 
+	/**
+	 * Sets cache storage engine
+	 * @param Nette\Caching\IStorage $storage
+	 * @return Connection   provides a fluent interface
+	 */
 	public function setCacheStorage(Nette\Caching\IStorage $storage = NULL)
 	{
-		$this->cache = $storage ? new Nette\Caching\Cache($storage, "Nette.Database/$this->dsn") : NULL;
+		$this->cache = $storage ? new Nette\Caching\Cache($storage, 'Nette.Database.' . md5($this->dsn)) : NULL;
+		return $this;
 	}
 
 
@@ -147,7 +170,7 @@ class Connection extends PDO
 				$need = TRUE; break;
 			}
 		}
-		if (isset($need) || strpos($statement, ':') !== FALSE && $this->preprocessor !== NULL) {
+		if (isset($need) && $this->preprocessor !== NULL) {
 			list($statement, $params) = $this->preprocessor->process($statement, $params);
 		}
 

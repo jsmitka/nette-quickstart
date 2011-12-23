@@ -25,14 +25,14 @@ class ServiceDefinition extends Nette\Object
 	/** @var string  class or interface name */
 	public $class;
 
-	/** @var string|array  Factory::create */
+	/** @var Statement */
 	public $factory;
 
-	/** @var array */
-	public $arguments;
-
-	/** @var array of array(callback|method|property, arguments) */
+	/** @var array of Statement */
 	public $setup = array();
+
+	/** @var array */
+	public $parameters = array();
 
 	/** @var array */
 	public $tags = array();
@@ -40,33 +40,40 @@ class ServiceDefinition extends Nette\Object
 	/** @var mixed */
 	public $autowired = TRUE;
 
+	/** @var bool */
+	public $shared = TRUE;
+
+	/** @var bool */
+	public $internal = FALSE;
 
 
-	public function setClass($class, array $args = NULL)
+
+	public function setClass($class, array $args = array())
 	{
 		$this->class = $class;
-		if ($args !== NULL) {
-			$this->arguments = $args;
+		if ($args) {
+			$this->setFactory($class, $args);
 		}
 		return $this;
 	}
 
 
 
-	public function setFactory($factory, array $args = NULL)
+	public function setFactory($factory, array $args = array())
 	{
-		$this->factory = $factory;
-		if ($args !== NULL) {
-			$this->arguments = $args;
-		}
+		$this->factory = new Statement($factory, $args);
 		return $this;
 	}
 
 
 
-	public function setArguments(array $args)
+	public function setArguments(array $args = array())
 	{
-		$this->arguments = $args;
+		if ($this->factory) {
+			$this->factory->arguments = $args;
+		} else {
+			$this->setClass($this->class, $args);
+		}
 		return $this;
 	}
 
@@ -74,7 +81,16 @@ class ServiceDefinition extends Nette\Object
 
 	public function addSetup($target, $args = NULL)
 	{
-		$this->setup[] = array($target, $args);
+		$this->setup[] = new Statement($target, $args);
+		return $this;
+	}
+
+
+
+	public function setParameters(array $params)
+	{
+		$this->shared = $this->autowired = FALSE;
+		$this->parameters = $params;
 		return $this;
 	}
 
@@ -91,6 +107,22 @@ class ServiceDefinition extends Nette\Object
 	public function setAutowired($on)
 	{
 		$this->autowired = $on;
+		return $this;
+	}
+
+
+
+	public function setShared($on)
+	{
+		$this->shared = (bool) $on;
+		return $this;
+	}
+
+
+
+	public function setInternal($on)
+	{
+		$this->internal = (bool) $on;
 		return $this;
 	}
 

@@ -41,18 +41,16 @@ class GroupedSelection extends Selection
 	{
 		parent::__construct($name, $refTable->connection);
 		$this->refTable = $refTable;
-		$this->through($column);
+		$this->column = $column;
+		$this->delimitedColumn = $this->connection->getSupplementalDriver()->delimite($this->column);
 	}
 
 
 
-	/**
-	 * Specify referencing column.
-	 * @param  string
-	 * @return GroupedSelection provides a fluent interface
-	 */
+	/** @deprecated */
 	public function through($column)
 	{
+		trigger_error(__METHOD__ . '() is deprecated; use ' . __CLASS__ . '::related("' . $this->name . '", "' . $column . '") instead.', E_USER_WARNING);
 		$this->column = $column;
 		$this->delimitedColumn = $this->refTable->connection->getSupplementalDriver()->delimite($this->column);
 		return $this;
@@ -83,21 +81,23 @@ class GroupedSelection extends Selection
 
 	public function aggregation($function)
 	{
-		$join = $this->createJoins(implode(',', $this->conditions), TRUE) + $this->createJoins($function);
-		$column = ($join ? "$this->delimitedName." : '') . $this->delimitedColumn;
-		$query = "SELECT $function, $column FROM $this->delimitedName" . implode($join);
-		if ($this->where) {
-			$query .= ' WHERE (' . implode(') AND (', $this->where) . ')';
-		}
-		$query .= " GROUP BY $column";
-		$aggregation = & $this->refTable->aggregation[$query];
+		$aggregation = & $this->refTable->aggregation[$function . implode('', $this->where) . implode('', $this->conditions)];
 		if ($aggregation === NULL) {
 			$aggregation = array();
-			foreach ($this->query($query, $this->parameters) as $row) {
+
+			$selection = new Selection($this->name, $this->connection);
+			$selection->where = $this->where;
+			$selection->parameters = $this->parameters;
+			$selection->conditions = $this->conditions;
+
+			$selection->select($function);
+			$selection->select("{$this->name}.{$this->column}");
+			$selection->group("{$this->name}.{$this->column}");
+
+			foreach ($selection as $row) {
 				$aggregation[$row[$this->column]] = $row;
 			}
 		}
-
 
 		if (isset($aggregation[$this->active])) {
 			foreach ($aggregation[$this->active] as $val) {
@@ -121,9 +121,15 @@ class GroupedSelection extends Selection
 		if ($data instanceof \Traversable && !$data instanceof Selection) {
 			$data = iterator_to_array($data);
 		}
-		if (is_array($data)) {
+
+		if (Nette\Utils\Validators::isList($data)) {
+			foreach (array_keys($data) as $key) {
+				$data[$key][$this->column] = $this->active;
+			}
+		} else {
 			$data[$this->column] = $this->active;
 		}
+
 		return parent::insert($data);
 	}
 
@@ -131,10 +137,13 @@ class GroupedSelection extends Selection
 
 	public function update($data)
 	{
-		$where = $this->where;
-		$this->where[0] = "$this->delimitedColumn = " . $this->connection->quote($this->active);
+		$condition = array($this->where, $this->parameters);
+
+		$this->where[0] = "$this->delimitedColumn = ?";
+		$this->parameters[0] = $this->active;
 		$return = parent::update($data);
-		$this->where = $where;
+
+		list($this->where, $this->parameters) = $condition;
 		return $return;
 	}
 
@@ -142,10 +151,13 @@ class GroupedSelection extends Selection
 
 	public function delete()
 	{
-		$where = $this->where;
-		$this->where[0] = "$this->delimitedColumn = " . $this->connection->quote($this->active);
+		$condition = array($this->where, $this->parameters);
+
+		$this->where[0] = "$this->delimitedColumn = ?";
+		$this->parameters[0] = $this->active;
 		$return = parent::delete();
-		$this->where = $where;
+
+		list($this->where, $this->parameters) = $condition;
 		return $return;
 	}
 

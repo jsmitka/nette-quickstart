@@ -23,6 +23,8 @@ use Nette;
  * @copyright  Copyright (c) 2005, 2007 Zend Technologies USA Inc.
  * @author     David Grudl
  *
+ * @property-read array $roles
+ * @property-read array $resources
  * @property-read mixed $queriedRole
  * @property-read mixed $queriedResource
  */
@@ -126,6 +128,17 @@ class Permission extends Nette\Object implements IAuthorizator
 		} elseif ($need && !isset($this->roles[$role])) {
 			throw new Nette\InvalidStateException("Role '$role' does not exist.");
 		}
+	}
+
+
+
+	/**
+	 * Returns all Roles.
+	 * @return array
+	 */
+	public function getRoles()
+	{
+		return array_keys($this->roles);
 	}
 
 
@@ -304,6 +317,17 @@ class Permission extends Nette\Object implements IAuthorizator
 		} elseif ($need && !isset($this->resources[$resource])) {
 			throw new Nette\InvalidStateException("Resource '$resource' does not exist.");
 		}
+	}
+
+
+
+	/**
+	 * Returns all Resources.
+	 * @return array
+	 */
+	public function getResources()
+	{
+		return array_keys($this->resources);
 	}
 
 

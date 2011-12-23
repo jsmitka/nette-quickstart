@@ -11,7 +11,7 @@ Stažení a instalace
 *******************
 
 .[note]
-Návod je psán pro aktuální vývojovou verzi. V době psaní této kapitoly se jedná o verzi `7f6bc92` ze dne 7. 12. 2011.
+Návod je psán pro aktuální vývojovou verzi. V době psaní této kapitoly se jedná o verzi `a1b5427` ze dne 23. 12. 2011.
 
 Nejprve si vytvoříme na místě, které bude přístupné z našeho vývojového webového serveru, prázdný adresář, do kterého
 umístíme náš projekt. Pojmenujeme ho například `quickstart`. Při nahrávání na produkční server je výhodné některé soubory
@@ -149,7 +149,7 @@ Debugger::enable();
 
 // Configure application
 $configurator = new Nette\Config\Configurator;
-$configurator->setCacheDirectory(__DIR__ . '/../temp');
+$configurator->setTempDirectory(__DIR__ . '/../temp');
 
 // Enable RobotLoader - this will load all classes automatically
 $configurator->createRobotLoader()
@@ -158,7 +158,8 @@ $configurator->createRobotLoader()
 	->register();
 
 // Create Dependency Injection container from config.neon file
-$container = $configurator->loadConfig(__DIR__ . '/config.neon');
+$configurator->addConfig(__DIR__ . '/config.neon');
+$container = $configurator->createContainer();
 
 // Opens already started session
 if ($container->session->exists()) {
@@ -204,14 +205,15 @@ Nastavení `Debugger::$logDirectory` totiž určuje adresář, do kterého se na
 
 /---php
 $configurator = new Nette\Config\Configurator;
-$configurator->setCacheDirectory(__DIR__ . '/../temp');
+$configurator->setTempDirectory(__DIR__ . '/../temp');
 
 $configurator->createRobotLoader()
 	->addDirectory(APP_DIR)
 	->addDirectory(LIBS_DIR)
 	->register();
 
-$container = $configurator->loadConfig(__DIR__ . '/config.neon');
+$configurator->addConfig(__DIR__ . '/config.neon');
+$container = $configurator->createContainer();
 \---
 
 Načte konfigurační soubor `config.neon`. Tento soubor obsahuje nastavení naší aplikace, hlavně připojení k databázi.

@@ -180,7 +180,13 @@ ve formuláři pomocí volání `setValues`. Prvním parametrem této metody je 
 říká, že chceme u neuvedených prvků hodnoty vymazat. Pokud bychom tento parametr neuvedli, Nette by jen
 přepisovalo hodnoty prvků, které jsme uvedli v poli.
 
-To je opět vše. Nyní by i přidivání úkolů mělo fungovat s využitím AJAXu.
+To je opět vše. Nyní by i přidivání úkolů mělo fungovat s využitím AJAXu. Pokud to zkusíme, zjistíme, že by možná
+bylo vhodnější nemazat hodnoty v celém formuláři, ale ponechat v selectu hodnotu vybraného uživatele. To zajistíme
+jednoduchým upravením volání `$form->setValues()`:
+
+/---php
+
+\---
 
 
 Flash zprávičky

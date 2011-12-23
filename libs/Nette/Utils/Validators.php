@@ -84,6 +84,8 @@ class Validators extends Nette\Object
 				$type = 'array(' . count($value) . ')';
 			} elseif (is_object($value)) {
 				$type = 'object ' . get_class($value);
+			} elseif (is_string($value) && strlen($value) < 40) {
+				$type = "string '$value'";
 			} else {
 				$type = gettype($value);
 			}
@@ -100,13 +102,14 @@ class Validators extends Nette\Object
 	 * @param  string  expected types separated by pipe
 	 * @return void
 	 */
-	public static function assertField($arr, $field, $expected = NULL)
+	public static function assertField($arr, $field, $expected = NULL, $label = "item '%' in array")
 	{
+		self::assert($arr, 'array', 'first argument');
 		if (!array_key_exists($field, $arr)) {
-			throw new AssertionException("Missing field '$field' in array.");
+			throw new AssertionException('Missing ' . str_replace('%', $field, $label) . '.');
 
 		} elseif ($expected) {
-			static::assert($arr[$field], $expected, "field '$field'");
+			static::assert($arr[$field], $expected, str_replace('%', $field, $label));
 		}
 	}
 

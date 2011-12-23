@@ -23,28 +23,11 @@ use Nette,
  */
 class PhpExtension extends Nette\Config\CompilerExtension
 {
-	private $options = array();
-
-
-	public function loadConfiguration(ContainerBuilder $container, array $config)
-	{
-		foreach ($config as $name => $value) {
-			if (is_array($value)) { // back compatibility - flatten INI dots
-				foreach ($value as $k => $v) {
-					$this->options["$name.$k"] = $v;
-				}
-			} else {
-				$this->options[$name] = $value;
-			}
-		}
-	}
-
-
 
 	public function afterCompile(ContainerBuilder $container, Nette\Utils\PhpGenerator\ClassType $class)
 	{
 		$initialize = $class->methods['initialize'];
-		foreach ($this->options as $name => $value) {
+		foreach ($this->getConfig() as $name => $value) {
 			if (!is_scalar($value)) {
 				throw new Nette\InvalidStateException("Configuration value for directive '$name' is not scalar.");
 

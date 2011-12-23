@@ -53,7 +53,6 @@ class NetteLoader extends AutoLoader
 		'nette\application\ui\control' => '/Application/UI/Control.php',
 		'nette\application\ui\form' => '/Application/UI/Form.php',
 		'nette\application\ui\invalidlinkexception' => '/Application/UI/InvalidLinkException.php',
-		'nette\application\ui\ipartiallyrenderable' => '/Application/UI/IPartiallyRenderable.php',
 		'nette\application\ui\irenderable' => '/Application/UI/IRenderable.php',
 		'nette\application\ui\isignalreceiver' => '/Application/UI/ISignalReceiver.php',
 		'nette\application\ui\istatepersistent' => '/Application/UI/IStatePersistent.php',
@@ -86,12 +85,13 @@ class NetteLoader extends AutoLoader
 		'nette\config\adapters\phpadapter' => '/Config/Adapters/PhpAdapter.php',
 		'nette\config\compiler' => '/Config/Compiler.php',
 		'nette\config\compilerextension' => '/Config/CompilerExtension.php',
-		'nette\config\config' => '/Config/Config.php',
 		'nette\config\configurator' => '/Config/Configurator.php',
 		'nette\config\extensions\constantsextension' => '/Config/Extensions/ConstantsExtension.php',
 		'nette\config\extensions\netteextension' => '/Config/Extensions/NetteExtension.php',
 		'nette\config\extensions\phpextension' => '/Config/Extensions/PhpExtension.php',
+		'nette\config\helpers' => '/Config/Helpers.php',
 		'nette\config\iadapter' => '/Config/IAdapter.php',
+		'nette\config\loader' => '/Config/Loader.php',
 		'nette\configurator' => '/common/Environment.php',
 		'nette\database\connection' => '/Database/Connection.php',
 		'nette\database\diagnostics\connectionpanel' => '/Database/Diagnostics/ConnectionPanel.php',
@@ -120,8 +120,10 @@ class NetteLoader extends AutoLoader
 		'nette\di\helpers' => '/DI/Helpers.php',
 		'nette\di\icontainer' => '/DI/IContainer.php',
 		'nette\di\missingserviceexception' => '/DI/exceptions.php',
+		'nette\di\nestedaccessor' => '/DI/NestedAccessor.php',
 		'nette\di\servicecreationexception' => '/DI/exceptions.php',
 		'nette\di\servicedefinition' => '/DI/ServiceDefinition.php',
+		'nette\di\statement' => '/DI/Statement.php',
 		'nette\diagnostics\bar' => '/Diagnostics/Bar.php',
 		'nette\diagnostics\bluescreen' => '/Diagnostics/BlueScreen.php',
 		'nette\diagnostics\debugger' => '/Diagnostics/Debugger.php',
@@ -241,7 +243,6 @@ class NetteLoader extends AutoLoader
 		'nette\unknownimagefileexception' => '/common/Image.php',
 		'nette\utils\arrays' => '/Utils/Arrays.php',
 		'nette\utils\assertionexception' => '/Utils/Validators.php',
-		'nette\utils\criticalsection' => '/Utils/CriticalSection.php',
 		'nette\utils\finder' => '/Utils/Finder.php',
 		'nette\utils\html' => '/Utils/Html.php',
 		'nette\utils\json' => '/Utils/Json.php',
@@ -249,6 +250,7 @@ class NetteLoader extends AutoLoader
 		'nette\utils\limitedscope' => '/Utils/LimitedScope.php',
 		'nette\utils\mimetypedetector' => '/Utils/MimeTypeDetector.php',
 		'nette\utils\neon' => '/Utils/Neon.php',
+		'nette\utils\neonentity' => '/Utils/Neon.php',
 		'nette\utils\neonexception' => '/Utils/Neon.php',
 		'nette\utils\paginator' => '/Utils/Paginator.php',
 		'nette\utils\phpgenerator\classtype' => '/Utils/PhpGenerator/ClassType.php',
@@ -291,7 +293,7 @@ class NetteLoader extends AutoLoader
 	{
 		$type = ltrim(strtolower($type), '\\');
 		if (isset($this->list[$type])) {
-			Nette\Utils\LimitedScope::load(NETTE_DIR . $this->list[$type]);
+			Nette\Utils\LimitedScope::load(NETTE_DIR . $this->list[$type], TRUE);
 			self::$count++;
 		}
 	}

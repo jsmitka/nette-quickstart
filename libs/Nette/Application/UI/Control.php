@@ -22,7 +22,7 @@ use Nette;
  *
  * @property-read Nette\Templating\ITemplate $template
  */
-abstract class Control extends PresenterComponent implements IPartiallyRenderable
+abstract class Control extends PresenterComponent implements IRenderable
 {
 	/** @var Nette\Templating\ITemplate */
 	private $template;
@@ -68,8 +68,8 @@ abstract class Control extends PresenterComponent implements IPartiallyRenderabl
 		$template->registerHelperLoader('Nette\Templating\DefaultHelpers::loader');
 
 		// default parameters
-		$template->control = $this;
-		$template->presenter = $presenter;
+		$template->control = $template->_control = $this;
+		$template->presenter = $template->_presenter = $presenter;
 		if ($presenter instanceof Presenter) {
 			$template->setCacheStorage($presenter->getContext()->templateCacheStorage);
 			$template->user = $presenter->getUser();
@@ -112,6 +112,7 @@ abstract class Control extends PresenterComponent implements IPartiallyRenderabl
 	 */
 	public function getWidget($name)
 	{
+		trigger_error(__METHOD__ . '() is deprecated, use getComponent() instead.', E_USER_WARNING);
 		return $this->getComponent($name);
 	}
 
@@ -183,12 +184,21 @@ abstract class Control extends PresenterComponent implements IPartiallyRenderabl
 				return TRUE;
 
 			} else {
-				foreach ($this->getComponents() as $component) {
-					if ($component instanceof IRenderable && $component->isControlInvalid()) {
-						// $this->invalidSnippets['__child'] = TRUE; // as cache
-						return TRUE;
+				$queue = array($this);
+				do {
+					foreach (array_shift($queue)->getComponents() as $component) {
+						if ($component instanceof IRenderable) {
+							if ($component->isControlInvalid()) {
+								// $this->invalidSnippets['__child'] = TRUE; // as cache
+								return TRUE;
+							}
+
+						} elseif ($component instanceof Nette\ComponentModel\IContainer) {
+							$queue[] = $component;
+						}
 					}
-				}
+				} while ($queue);
+
 				return FALSE;
 			}
 
