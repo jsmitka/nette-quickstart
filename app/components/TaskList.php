@@ -73,7 +73,7 @@ class TaskList extends UI\Control
 	{
 		$task = $this->model->getTasks()->find($taskId)->fetch();
 		// ověření, zda je tento úkol uživateli skutečně přiřazen
-		if ($task !== NULL && $task->user_id = $this->presenter->getUser()->getId()) {
+		if ($task !== NULL && $task->user_id === $this->presenter->getUser()->getId()) {
 			$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
 			// přesměrování nebo invalidace snippetu
 			if (!$this->presenter->isAjax()) {
