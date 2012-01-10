@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -50,7 +50,7 @@ class MicroPresenter extends Nette\Object implements Application\IPresenter
 	{
 		$this->request = $request;
 
-		$httpRequest = $this->context->getByClass('Nette\Http\IRequest');
+		$httpRequest = $this->context->getByType('Nette\Http\IRequest');
 		if (!$httpRequest->isAjax() && ($request->isMethod('get') || $request->isMethod('head'))) {
 			$refUrl = clone $httpRequest->getUrl();
 			$url = $this->context->router->constructUrl($request, $refUrl->setPath($refUrl->getScriptPath()));
@@ -100,7 +100,7 @@ class MicroPresenter extends Nette\Object implements Application\IPresenter
 		$template->setParameters($this->request->getParameters());
 		$template->presenter = $this;
 		$template->context = $context = $this->context;
-		$url = $context->getByClass('Nette\Http\IRequest')->getUrl();
+		$url = $context->getByType('Nette\Http\IRequest')->getUrl();
 		$template->baseUrl = rtrim($url->getBaseUrl(), '/');
 		$template->basePath = rtrim($url->getBasePath(), '/');
 

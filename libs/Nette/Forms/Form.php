@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -23,7 +23,7 @@ use Nette;
  * @property   mixed $action
  * @property   string $method
  * @property-read array $groups
- * @property-read Nette\Localization\ITranslator|NULL $translator
+ * @property   Nette\Localization\ITranslator|NULL $translator
  * @property-read bool $anchored
  * @property-read ISubmitterControl|FALSE $submitted
  * @property-read bool $success

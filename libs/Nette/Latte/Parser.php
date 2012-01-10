@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -54,10 +54,10 @@ class Parser extends Nette\Object
 	private $macroNodes = array();
 
 	/** @var array */
-	public $context;
+	private $context;
 
 	/** @var string */
-	public $templateId;
+	private $templateId;
 
 	/** @internal Context-aware escaping states */
 	const CONTEXT_TEXT = 'text',
@@ -73,7 +73,7 @@ class Parser extends Nette\Object
 	{
 		$this->macroHandlers = new \SplObjectStorage;
 		$this->setDelimiters('\\{(?![\\s\'"{}])', '\\}');
-		$this->context = array(self::CONTEXT_NONE, 'text');
+		$this->setContext(self::CONTEXT_NONE, 'text');
 	}
 
 
@@ -153,8 +153,9 @@ class Parser extends Nette\Object
 		$prologs = $epilogs = '';
 		foreach ($this->macroHandlers as $handler) {
 			$res = $handler->finalize();
-			$prologs .= isset($res[0]) ? "<?php $res[0]\n?>" : '';
-			$epilogs .= isset($res[1]) ? "<?php $res[1]\n?>" : '';
+			$handlerName = get_class($handler);
+			$prologs .= empty($res[0]) ? '' : "<?php\n// prolog $handlerName\n$res[0]\n?>";
+			$epilogs = (empty($res[1]) ? '' : "<?php\n// epilog $handlerName\n$res[1]\n?>") . $epilogs;
 		}
 		$this->output = ($prologs ? $prologs . "<?php\n//\n// main template\n//\n?>\n" : '') . $this->output . $epilogs;
 
@@ -241,7 +242,7 @@ class Parser extends Nette\Object
 
 		} elseif (!empty($matches['end'])) { // end of HTML tag />
 			$node = end($this->htmlNodes);
-			$isEmpty = !$node->closing && (strpos($matches['end'], '/') !== FALSE || $node->isEmpty);
+			$isEmpty = !$node->closing && (Strings::contains($matches['end'], '/') || $node->isEmpty);
 
 			if ($isEmpty) {
 				$matches[0] = (Nette\Utils\Html::$xhtml ? ' />' : '>')
@@ -357,6 +358,37 @@ class Parser extends Nette\Object
 			foreach ($matches as $k => $v) $matches[$k] = $v[0];
 		}
 		return $matches;
+	}
+
+
+
+	/**
+	 * @return Parser  provides a fluent interface
+	 */
+	public function setContext($context, $mime = NULL)
+	{
+		$this->context = array($context, $mime);
+		return $this;
+	}
+
+
+
+	/**
+	 * @return array [context, mime]
+	 */
+	public function getContext()
+	{
+		return $this->context;
+	}
+
+
+
+	/**
+	 * @return string
+	 */
+	public function getTemplateId()
+	{
+		return $this->templateId;
 	}
 
 

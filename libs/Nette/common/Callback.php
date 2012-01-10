@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -19,6 +19,9 @@ use Nette;
  * PHP callback encapsulation.
  *
  * @author     David Grudl
+ * @property-read bool $callable
+ * @property-read string|array|\Closure $native
+ * @property-read bool $static
  */
 final class Callback extends Object
 {

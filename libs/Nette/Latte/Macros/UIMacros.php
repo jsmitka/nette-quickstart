@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -91,7 +91,7 @@ class UIMacros extends MacroSet
 	{
 		// try close last block
 		try {
-			$this->parser->writeMacro('/block');
+			$this->getParser()->writeMacro('/block');
 		} catch (ParseException $e) {
 		}
 
@@ -99,7 +99,7 @@ class UIMacros extends MacroSet
 
 		if ($this->namedBlocks) {
 			foreach ($this->namedBlocks as $name => $code) {
-				$func = '_lb' . substr(md5($this->parser->templateId . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
+				$func = '_lb' . substr(md5($this->getParser()->getTemplateId() . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
 				$snippet = $name[0] === '_';
 				$prolog[] = "//\n// block $name\n//\n"
 					. "if (!function_exists(\$_l->blocks[" . var_export($name, TRUE) . "][] = '$func')) { "
@@ -196,7 +196,7 @@ if (!empty($_control->snippetMode)) {
 	public function macroIncludeBlock(MacroNode $node, $writer)
 	{
 		return $writer->write('Nette\Latte\Macros\CoreMacros::includeTemplate(%node.word, %node.array? + get_defined_vars(), $_l->templates[%var])->render()',
-			$this->parser->templateId);
+			$this->getParser()->getTemplateId());
 	}
 
 
@@ -260,7 +260,7 @@ if (!empty($_control->snippetMode)) {
 				$node->data->leave = TRUE;
 				$fname = $writer->formatWord($name);
 				$node->data->end = "}} call_user_func(reset(\$_l->blocks[$fname]), \$_l, get_defined_vars())";
-				$func = '_lb' . substr(md5($this->parser->templateId . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
+				$func = '_lb' . substr(md5($this->getParser()->getTemplateId() . $name), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
 				return "//\n// block $name\n//\n"
 					. "if (!function_exists(\$_l->blocks[$fname][] = '$func')) { "
 					. "function $func(\$_l, \$_args) { "
@@ -335,7 +335,7 @@ if (!empty($_control->snippetMode)) {
 	 */
 	public function macroIfset(MacroNode $node, $writer)
 	{
-		if (strpos($node->args, '#') === FALSE) {
+		if (!Strings::contains($node->args, '#')) {
 			return FALSE;
 		}
 		$list = array();
@@ -361,7 +361,7 @@ if (!empty($_control->snippetMode)) {
 		$method = isset($pair[1]) ? ucfirst($pair[1]) : '';
 		$method = Strings::match($method, '#^(' . self::RE_IDENTIFIER . '|)$#') ? "render$method" : "{\"render$method\"}";
 		$param = $writer->formatArray();
-		if (strpos($node->args, '=>') === FALSE) {
+		if (!Strings::contains($node->args, '=>')) {
 			$param = substr($param, 6, -1); // removes array()
 		}
 		return ($name[0] === '$' ? "if (is_object($name)) \$_ctrl = $name; else " : '')
@@ -400,27 +400,30 @@ if (!empty($_control->snippetMode)) {
 	 */
 	public function macroContentType(MacroNode $node, $writer)
 	{
-		if (strpos($node->args, 'html') !== FALSE) {
-			$this->parser->context = array(Latte\Parser::CONTEXT_TEXT);
+		if (Strings::contains($node->args, 'html')) {
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_TEXT);
 
-		} elseif (strpos($node->args, 'xml') !== FALSE) {
-			$this->parser->context = array(Latte\Parser::CONTEXT_NONE, 'xml');
+		} elseif (Strings::contains($node->args, 'xml')) {
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_NONE, 'xml');
 
-		} elseif (strpos($node->args, 'javascript') !== FALSE) {
-			$this->parser->context = array(Latte\Parser::CONTEXT_NONE, 'js');
+		} elseif (Strings::contains($node->args, 'javascript')) {
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_NONE, 'js');
 
-		} elseif (strpos($node->args, 'css') !== FALSE) {
-			$this->parser->context = array(Latte\Parser::CONTEXT_NONE, 'css');
+		} elseif (Strings::contains($node->args, 'css')) {
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_NONE, 'css');
 
-		} elseif (strpos($node->args, 'plain') !== FALSE) {
-			$this->parser->context = array(Latte\Parser::CONTEXT_NONE, 'text');
+		} elseif (Strings::contains($node->args, 'plain')) {
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_NONE, 'text');
+
+		} elseif (Strings::contains($node->args, 'calendar')) {
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_NONE, 'ical');
 
 		} else {
-			$this->parser->context = array(Latte\Parser::CONTEXT_NONE);
+			$this->getParser()->setContext(Latte\Parser::CONTEXT_NONE);
 		}
 
 		// temporary solution
-		if (strpos($node->args, '/')) {
+		if (Strings::contains($node->args, '/')) {
 			return $writer->write('$netteHttpResponse->setHeader("Content-Type", %var)', $node->args);
 		}
 	}
