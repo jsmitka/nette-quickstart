@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -114,16 +114,16 @@ class RequestFactory extends Nette\Object
 			$script = '/';
 		}
 
-		if (strncasecmp($url->path . '/', $script . '/', strlen($script) + 1) === 0) { // whole script in URL
-			$url->scriptPath = substr($url->path, 0, strlen($script));
-
-		} elseif (strncasecmp($url->path, $script, strrpos($script, '/') + 1) === 0) { // directory part of script in URL
-			$url->scriptPath = substr($url->path, 0, strrpos($script, '/') + 1);
-
-		} else {
-			$url->scriptPath = '/';
+		$path = strtolower($url->path) . '/';
+		$script = strtolower($script) . '/';
+		$max = min(strlen($path), strlen($script));
+		for ($i = 0; $i < $max; $i++) {
+			if ($path[$i] !== $script[$i]) {
+				break;
+			} elseif ($path[$i] === '/') {
+				$url->scriptPath = substr($url->path, 0, $i + 1);
+			}
 		}
-
 
 		// GET, POST, COOKIE
 		$useFilter = (!in_array(ini_get('filter.default'), array('', 'unsafe_raw')) || ini_get('filter.default_flags'));

@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -104,11 +104,12 @@ class Loader extends Nette\Object
 	 * Registers adapter for given file extension.
 	 * @param  string  file extension
 	 * @param  string|Nette\Config\IAdapter
-	 * @return void
+	 * @return Loader  provides a fluent interface
 	 */
 	public function addAdapter($extension, $adapter)
 	{
 		$this->adapters[strtolower($extension)] = $adapter;
+		return $this;
 	}
 
 

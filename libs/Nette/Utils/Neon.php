@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -82,7 +82,7 @@ class Neon extends Nette\Object
 				foreach ($var as $k => $v) {
 					$v = self::encode($v, self::BLOCK);
 					$s .= ($isList ? '-' : self::encode($k) . ':')
-						. (strpos($v, "\n") === FALSE ? ' ' . $v : "\n\t" . str_replace("\n", "\n\t", $v))
+						. (Strings::contains($v, "\n") ? "\n\t" . str_replace("\n", "\n\t", $v) : ' ' . $v)
 						. "\n";
 					continue;
 				}
@@ -103,7 +103,7 @@ class Neon extends Nette\Object
 
 		} elseif (is_float($var)) {
 			$var = var_export($var, TRUE);
-			return strpos($var, '.') === FALSE ? $var . '.0' : $var;
+			return Strings::contains($var, '.') ? $var : $var . '.0';
 
 		} else {
 			return json_encode($var);

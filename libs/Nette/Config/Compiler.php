@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -22,7 +22,7 @@ use Nette,
  * @author     David Grudl
  *
  * @property-read array $extensions
- * @property-read Nette\DI\ContainerBuilder $container
+ * @property-read Nette\DI\ContainerBuilder $containerBuilder
  * @property-read array $config
  */
 class Compiler extends Nette\Object
@@ -43,7 +43,7 @@ class Compiler extends Nette\Object
 
 	/**
 	 * Add custom configurator extension.
-	 * @return ServiceDefinition
+	 * @return Compiler  provides a fluent interface
 	 */
 	public function addExtension($name, CompilerExtension $extension)
 	{
@@ -69,7 +69,7 @@ class Compiler extends Nette\Object
 	/**
 	 * @return Nette\DI\ContainerBuilder
 	 */
-	public function getContainer()
+	public function getContainerBuilder()
 	{
 		return $this->container;
 	}
@@ -118,10 +118,8 @@ class Compiler extends Nette\Object
 			throw new Nette\InvalidStateException("Found sections '$extra' in configuration, but corresponding extensions are missing.");
 		}
 
-		$configExp = $this->container->expand($this->config);
 		foreach ($this->extensions as $name => $extension) {
-			$config = isset($configExp[$name]) ? array_diff_key($configExp[$name], self::$reserved) : array();
-			$extension->loadConfiguration($this->container, $config);
+			$extension->loadConfiguration();
 		}
 	}
 
@@ -137,7 +135,17 @@ class Compiler extends Nette\Object
 
 			if (isset($this->config[$name])) {
 				$this->parseServices($this->container, $this->config[$name], $name);
-	}
+			}
+		}
+
+		foreach ($this->container->getDefinitions() as $name => $def) {
+			$factory = $name . 'Factory';
+			if (!$def->shared && !$def->internal && !$this->container->hasDefinition($factory)) {
+				$this->container->addDefinition($factory)
+					->setClass('Nette\Callback', array('@container', 'create' . ucfirst($name)))
+					->setAutowired(FALSE)
+					->tags = $def->tags;
+			}
 		}
 	}
 
@@ -146,7 +154,7 @@ class Compiler extends Nette\Object
 	public function generateCode($className, $parentName)
 	{
 		foreach ($this->extensions as $extension) {
-			$extension->beforeCompile($this->container);
+			$extension->beforeCompile();
 		}
 
 		$class = $this->container->generateClass($parentName);
@@ -154,7 +162,7 @@ class Compiler extends Nette\Object
 			->addMethod('initialize');
 
 		foreach ($this->extensions as $extension) {
-			$extension->afterCompile($this->container, $class);
+			$extension->afterCompile($class);
 		}
 		return (string) $class;
 	}
@@ -171,15 +179,20 @@ class Compiler extends Nette\Object
 	 */
 	public static function parseServices(Nette\DI\ContainerBuilder $container, array $config, $namespace = NULL)
 	{
-		$all = isset($config['services']) ? $config['services'] : array();
-		$all += isset($config['factories']) ? $config['factories'] : array();
+		$services = isset($config['services']) ? $config['services'] : array();
+		$factories = isset($config['factories']) ? $config['factories'] : array();
+		if ($tmp = array_intersect_key($services, $factories)) {
+			$tmp = implode("', '", array_keys($tmp));
+			throw new Nette\DI\ServiceCreationException("It is not allowed to use services and factories with the same names: '$tmp'.");
+		}
 
+		$all = $services + $factories;
 		uasort($all, function($a, $b) {
 			return strcmp(Helpers::isInheriting($a), Helpers::isInheriting($b));
 		});
 
 		foreach ($all as $name => $def) {
-			$isService = array_key_exists($name, $config['services']);
+			$shared = array_key_exists($name, $config['services']);
 			$name = ($namespace ? $namespace . '_' : '') . $name;
 
 			if (($parent = Helpers::takeParent($def)) && $parent !== $name) {
@@ -192,11 +205,14 @@ class Compiler extends Nette\Object
 				}
 			} elseif ($container->hasDefinition($name)) {
 				$definition = $container->getDefinition($name);
+				if ($definition->shared !== $shared) {
+					throw new Nette\DI\ServiceCreationException("It is not allowed to use service and factory with the same name '$name'.");
+				}
 			} else {
 				$definition = $container->addDefinition($name);
 			}
 			try {
-				static::parseService($definition, $def, $isService);
+				static::parseService($definition, $def, $shared);
 			} catch (\Exception $e) {
 				throw new Nette\DI\ServiceCreationException("Service '$name': " . $e->getMessage(), NULL, $e);
 			}
@@ -219,7 +235,7 @@ class Compiler extends Nette\Object
 
 		$known = $shared
 			? array('class', 'factory', 'arguments', 'setup', 'autowired', 'run', 'tags')
-			: array('class', 'factory', 'arguments', 'setup', 'autowired', 'internal', 'parameters');
+			: array('class', 'factory', 'arguments', 'setup', 'tags', 'internal', 'parameters');
 
 		if ($error = array_diff(array_keys($config), $known)) {
 			throw new Nette\InvalidStateException("Unknown key '" . implode("', '", $error) . "' in definition of service.");

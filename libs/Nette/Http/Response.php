@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -21,8 +21,8 @@ use Nette;
  * @author     David Grudl
  *
  * @property   int $code
+ * @property-read bool $sent
  * @property-read array $headers
- * @property-read mixed $sent
  */
 final class Response extends Nette\Object implements IResponse
 {
@@ -118,7 +118,7 @@ final class Response extends Nette\Object implements IResponse
 	 * Adds HTTP header.
 	 * @param  string  header name
 	 * @param  string  header value
-	 * @return void
+	 * @return Response  provides a fluent interface
 	 * @throws Nette\InvalidStateException  if HTTP headers have been sent
 	 */
 	public function addHeader($name, $value)
@@ -128,6 +128,7 @@ final class Response extends Nette\Object implements IResponse
 		}
 
 		header($name . ': ' . $value, FALSE, $this->code);
+		return $this;
 	}
 
 

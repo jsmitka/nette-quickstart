@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -25,12 +25,15 @@ use Nette,
  * @author     David Grudl
  *
  * @property-read Nette\Application\Request $request
- * @property-read array $signal
+ * @property-read array|NULL $signal
  * @property-read string $action
  * @property      string $view
  * @property      string $layout
- * @property-read mixed $payload
- * @property      Nette\DI\IContainer $context
+ * @property-read stdClass $payload
+ * @property-read bool $ajax
+ * @property-read Nette\Application\Request $lastCreatedRequest
+ * @property-read Nette\Http\SessionSection $flashSession
+ * @property-read \SystemContainer|Nette\DI\IContainer $context
  * @property-read Nette\Application\Application $application
  * @property-read Nette\Http\Session $session
  * @property-read Nette\Http\User $user
@@ -1265,7 +1268,8 @@ abstract class Presenter extends Control implements Application\IPresenter
 
 
 	/**
-	 * @deprecated
+	 * Gets the context.
+	 * @return \SystemContainer|Nette\DI\IContainer
 	 */
 	final public function getContext()
 	{
@@ -1291,7 +1295,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	protected function getHttpRequest()
 	{
-		return $this->context->getByClass('Nette\Http\IRequest');
+		return $this->context->getByType('Nette\Http\IRequest');
 	}
 
 
@@ -1301,7 +1305,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	protected function getHttpResponse()
 	{
-		return $this->context->getByClass('Nette\Http\IResponse');
+		return $this->context->getByType('Nette\Http\IResponse');
 	}
 
 
@@ -1311,7 +1315,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	protected function getHttpContext()
 	{
-		return $this->context->getByClass('Nette\Http\Context');
+		return $this->context->getByType('Nette\Http\Context');
 	}
 
 
@@ -1321,7 +1325,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	public function getApplication()
 	{
-		return $this->context->getByClass('Nette\Application\Application');
+		return $this->context->getByType('Nette\Application\Application');
 	}
 
 
@@ -1331,7 +1335,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	public function getSession($namespace = NULL)
 	{
-		$handler = $this->context->getByClass('Nette\Http\Session');
+		$handler = $this->context->getByType('Nette\Http\Session');
 		return $namespace === NULL ? $handler : $handler->getSection($namespace);
 	}
 
@@ -1342,7 +1346,7 @@ abstract class Presenter extends Control implements Application\IPresenter
 	 */
 	public function getUser()
 	{
-		return $this->context->getByClass('Nette\Http\IUser');
+		return $this->context->getByType('Nette\Http\IUser');
 	}
 
 }

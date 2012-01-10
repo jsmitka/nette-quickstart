@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -31,7 +31,7 @@ class Statement extends \PDOStatement
 	private $connection;
 
 	/** @var float */
-	public $time;
+	private $time;
 
 	/** @var array */
 	private $types;
@@ -132,7 +132,7 @@ class Statement extends \PDOStatement
 	{
 		if ($this->types === NULL) {
 			$this->types = array();
-			if ($this->connection->getSupplementalDriver()->supports['meta']) { // workaround for PHP bugs #53782, #54695
+			if ($this->connection->getSupplementalDriver()->isSupported(ISupplementalDriver::META)) { // workaround for PHP bugs #53782, #54695
 				$col = 0;
 				while ($meta = $this->getColumnMeta($col++)) {
 					if (isset($meta['native_type'])) {
@@ -142,6 +142,16 @@ class Statement extends \PDOStatement
 			}
 		}
 		return $this->types;
+	}
+
+
+
+	/**
+	 * @return float
+	 */
+	public function getTime()
+	{
+		return $this->time;
 	}
 
 

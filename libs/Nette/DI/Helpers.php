@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -119,7 +119,7 @@ final class Helpers
 				$optCount = 0;
 
 			} elseif ($parameter->getClass()) { // has object typehint
-				$res[$num] = $container->getByClass($parameter->getClass()->getName());
+				$res[$num] = $container->getByType($parameter->getClass()->getName());
 				if ($res[$num] === NULL) {
 					if ($parameter->allowsNull()) {
 						$optCount++;
