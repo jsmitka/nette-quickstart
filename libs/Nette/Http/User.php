@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -175,7 +175,7 @@ class User extends Nette\Object implements IUser
 	 */
 	final public function getAuthenticator()
 	{
-		return $this->authenticator ?: $this->context->getByClass('Nette\Security\IAuthenticator');
+		return $this->authenticator ?: $this->context->getByType('Nette\Security\IAuthenticator');
 	}
 
 
@@ -409,7 +409,7 @@ class User extends Nette\Object implements IUser
 	 */
 	final public function getAuthorizator()
 	{
-		return $this->authorizator ?: $this->context->getByClass('Nette\Security\IAuthorizator');
+		return $this->authorizator ?: $this->context->getByType('Nette\Security\IAuthorizator');
 	}
 
 

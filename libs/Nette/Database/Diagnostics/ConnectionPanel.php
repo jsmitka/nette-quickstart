@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -28,10 +28,10 @@ class ConnectionPanel extends Nette\Object implements Nette\Diagnostics\IBarPane
 	static public $maxLength = 1000;
 
 	/** @var int logged time */
-	public $totalTime = 0;
+	private $totalTime = 0;
 
 	/** @var array */
-	public $queries = array();
+	private $queries = array();
 
 	/** @var string */
 	public $name;
@@ -70,8 +70,8 @@ class ConnectionPanel extends Nette\Object implements Nette\Diagnostics\IBarPane
 				break;
 			}
 		}
-		$this->totalTime += $result->time;
-		$this->queries[] = array($result->queryString, $params, $result->time, $result->rowCount(), $result->getConnection(), $source);
+		$this->totalTime += $result->getTime();
+		$this->queries[] = array($result->queryString, $params, $result->getTime(), $result->rowCount(), $result->getConnection(), $source);
 	}
 
 

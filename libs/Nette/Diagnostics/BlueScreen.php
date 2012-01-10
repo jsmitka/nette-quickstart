@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -32,7 +32,7 @@ class BlueScreen extends Nette\Object
 	 * Add custom panel.
 	 * @param  callback
 	 * @param  string
-	 * @return void
+	 * @return BlueScreen  provides a fluent interface
 	 */
 	public function addPanel($panel, $id = NULL)
 	{
@@ -41,6 +41,7 @@ class BlueScreen extends Nette\Object
 		} else {
 			$this->panels[$id] = $panel;
 		}
+		return $this;
 	}
 
 

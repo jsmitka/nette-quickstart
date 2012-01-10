@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -32,17 +32,18 @@ class GroupedSelection extends Selection
 	/** @var string */
 	private $delimitedColumn;
 
-	/** @var */
-	public $active;
+	/** @var mixed */
+	private $active;
 
 
 
-	public function __construct($name, Selection $refTable, $column)
+	public function __construct($name, Selection $refTable, $column, $active = NULL)
 	{
 		parent::__construct($name, $refTable->connection);
 		$this->refTable = $refTable;
 		$this->column = $column;
 		$this->delimitedColumn = $this->connection->getSupplementalDriver()->delimite($this->column);
+		$this->active = $active;
 	}
 
 

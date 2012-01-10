@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -25,8 +25,11 @@ use Nette,
 class NetteExtension extends Nette\Config\CompilerExtension
 {
 
-	public function loadConfiguration(ContainerBuilder $container, array $config)
+	public function loadConfiguration()
 	{
+		$container = $this->getContainerBuilder();
+		$config = $this->getConfig();
+
 		// cache
 		$container->addDefinition('cacheJournal')
 			->setClass('Nette\Caching\Storages\FileJournal', array('%tempDir%'));
@@ -100,11 +103,12 @@ class NetteExtension extends Nette\Config\CompilerExtension
 
 
 
-	public function afterCompile(ContainerBuilder $container, Nette\Utils\PhpGenerator\ClassType $class)
+	public function afterCompile(Nette\Utils\PhpGenerator\ClassType $class)
 	{
 		$initialize = $class->methods['initialize'];
+		$container = $this->getContainerBuilder();
 
-		if (isset($container->parameters['tempDir'])) {
+		if (!empty($container->parameters['tempDir'])) {
 			$initialize->addBody($this->checkTempDir($container->expand('%tempDir%/cache')));
 		}
 		foreach ($container->findByTag('run') as $name => $foo) {

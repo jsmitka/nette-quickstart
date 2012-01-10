@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -20,6 +20,8 @@ use Nette,
  * Configurator compiling extension.
  *
  * @author     David Grudl
+ * @property-read array $config
+ * @property-read Nette\DI\ContainerBuilder $containerBuilder
  */
 abstract class CompilerExtension extends Nette\Object
 {
@@ -52,7 +54,35 @@ abstract class CompilerExtension extends Nette\Object
 		$config = isset($config[$this->name]) ? $config[$this->name] : array();
 		unset($config['services'], $config['factories']);
 		$config = Helpers::merge($config, $defaults);
-		return $expand ? $this->compiler->getContainer()->expand($config) : $config;
+		return $expand ? $this->compiler->getContainerBuilder()->expand($config) : $config;
+	}
+
+
+
+	/**
+	 * @return Nette\DI\ContainerBuilder
+	 */
+	public function getContainerBuilder()
+	{
+		return $this->compiler->getContainerBuilder();
+	}
+
+
+
+	/**
+	 * Reads configuration from file.
+	 * @param  string  file name
+	 * @return array
+	 */
+	public function loadFromFile($file)
+	{
+		$loader = new Loader;
+		$res = $loader->load($file);
+		$container = $this->compiler->getContainerBuilder();
+		foreach ($loader->getDependencies() as $file) {
+			$container->addDependency($file);
+		}
+		return $res;
 	}
 
 
@@ -71,11 +101,9 @@ abstract class CompilerExtension extends Nette\Object
 
 	/**
 	 * Processes configuration data. Intended to be overridden by descendant.
-	 * @param  ContainerBuilder builded DI container
-	 * @param  array  configuration with expanded parameters
 	 * @return void
 	 */
-	public function loadConfiguration(ContainerBuilder $container, array $config)
+	public function loadConfiguration()
 	{
 	}
 
@@ -85,7 +113,7 @@ abstract class CompilerExtension extends Nette\Object
 	 * Adjusts DI container before is compiled to PHP class. Intended to be overridden by descendant.
 	 * @return void
 	 */
-	public function beforeCompile(ContainerBuilder $container)
+	public function beforeCompile()
 	{
 	}
 
@@ -95,7 +123,7 @@ abstract class CompilerExtension extends Nette\Object
 	 * Adjusts DI container compiled to PHP class. Intended to be overridden by descendant.
 	 * @return void
 	 */
-	public function afterCompile(ContainerBuilder $container, Nette\Utils\PhpGenerator\ClassType $class)
+	public function afterCompile(Nette\Utils\PhpGenerator\ClassType $class)
 	{
 	}
 

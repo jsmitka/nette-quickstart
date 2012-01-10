@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -22,9 +22,6 @@ use Nette;
  */
 class MsSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDriver
 {
-	/** @var array */
-	public $supports = array('meta' => TRUE);
-
 	/** @var Nette\Database\Connection */
 	private $connection;
 
@@ -140,6 +137,16 @@ class MsSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 	public function getForeignKeys($table)
 	{
 		throw new NotImplementedException;
+	}
+
+
+
+	/**
+	 * @return bool
+	 */
+	public function isSupported($item)
+	{
+		return $item === self::META;
 	}
 
 }

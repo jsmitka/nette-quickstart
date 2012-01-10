@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -22,8 +22,7 @@ use Nette,
  * @author     David Grudl
  *
  * @property   bool $productionMode
- * @property   string $tempDirectory
- * @property-read \SystemContainer $container
+ * @property-write $tempDirectory
  */
 class Configurator extends Nette\Object
 {
@@ -81,7 +80,7 @@ class Configurator extends Nette\Object
 	public function setTempDirectory($path)
 	{
 		$this->params['tempDir'] = $path;
-		if (!is_dir($cacheDir = $this->getCacheDirectory())) {
+		if (($cacheDir = $this->getCacheDirectory()) && !is_dir($cacheDir)) {
 			umask(0000);
 			mkdir($cacheDir, 0777);
 		}
@@ -200,7 +199,7 @@ class Configurator extends Nette\Object
 	 * Build system container class.
 	 * @return string
 	 */
-	protected function buildContainer(& $dependencies)
+	protected function buildContainer(& $dependencies = NULL)
 	{
 		$loader = new Loader;
 		$config = array();
@@ -227,7 +226,7 @@ class Configurator extends Nette\Object
 			$this->params['container']['class'],
 			$config['parameters']['container']['parent']
 		);
-		$dependencies = array_merge($loader->getDependencies(), $compiler->getContainer()->getDependencies());
+		$dependencies = array_merge($loader->getDependencies(), $compiler->getContainerBuilder()->getDependencies());
 		return $code;
 	}
 
@@ -269,7 +268,7 @@ class Configurator extends Nette\Object
 
 	protected function getCacheDirectory()
 	{
-		return isset($this->params['tempDir']) ? $this->params['tempDir'] . '/cache' : NULL;
+		return empty($this->params['tempDir']) ? NULL : $this->params['tempDir'] . '/cache';
 	}
 
 

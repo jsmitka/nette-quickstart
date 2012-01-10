@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nette Framework (http://nette.org)
  *
- * Copyright (c) 2004, 2011 David Grudl (http://davidgrudl.com)
+ * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
  *
  * For the full copyright and license information, please view
  * the file license.txt that was distributed with this source code.
@@ -25,7 +25,7 @@ use Nette,
 class MacroSet extends Nette\Object implements Latte\IMacro
 {
 	/** @var Latte\Parser */
-	public $parser;
+	private $parser;
 
 	/** @var array */
 	private $macros;
@@ -43,6 +43,7 @@ class MacroSet extends Nette\Object implements Latte\IMacro
 	{
 		$this->macros[$name] = array($begin, $end);
 		$this->parser->addMacro($name, $this);
+		return $this;
 	}
 
 
@@ -104,7 +105,7 @@ class MacroSet extends Nette\Object implements Latte\IMacro
 	private function compile(MacroNode $node, $def)
 	{
 		$node->tokenizer->reset();
-		$writer = Latte\PhpWriter::using($node, $this->parser->context);
+		$writer = Latte\PhpWriter::using($node, $this->parser->getContext());
 		if (is_string($def)) {
 			$code = $writer->write($def);
 		} else {
@@ -114,6 +115,16 @@ class MacroSet extends Nette\Object implements Latte\IMacro
 			}
 		}
 		return "<?php $code ?>";
+	}
+
+
+
+	/**
+	 * @return Latte\Parser
+	 */
+	public function getParser()
+	{
+		return $this->parser;
 	}
 
 }
