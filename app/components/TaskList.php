@@ -64,6 +64,28 @@ class TaskList extends UI\Control
 		$this->template->render();
 	}
 
+	/**
+	 * Načtení tasku podle ID. V případě neexistnece zobrazi flashmessage.
+	 * @param $taskId ID úkolu
+	 */
+	protected function loadTask($taskId)
+	{
+		$task = $this->model->getTasks()->find($taskId)->fetch();
+
+		if (!$task) {
+			if (!$this->presenter->isAjax()) {
+				$this->flashMessage('Task does not exist', 'error');
+				$this->redirect('this');
+			} else {
+				$this->template->flashes[] = (object)array(
+					'message' => 'Task does not exist', 'type' => 'error'
+				);
+				$this->invalidateControl();
+			}
+		}
+
+		return $task;
+	}
 
 	/**
 	 * Signál, který označí zadaný úkol jako splněný.
@@ -71,9 +93,9 @@ class TaskList extends UI\Control
 	 */
 	public function handleMarkDone($taskId)
 	{
-		$task = $this->model->getTasks()->find($taskId)->fetch();
+		$task = $this->loadTask($taskId);
 		// ověření, zda je tento úkol uživateli skutečně přiřazen
-		if ($task !== NULL && $task->user_id === $this->presenter->getUser()->getId()) {
+		if ($task && $task->user_id === $this->presenter->getUser()->getId()) {
 			$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
 			// přesměrování nebo invalidace snippetu
 			if (!$this->presenter->isAjax()) {
